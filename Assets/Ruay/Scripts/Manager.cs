@@ -11,11 +11,10 @@ using Amazon.S3;
 using Amazon.S3.Model;
 using Facebook.Unity;
 public class Manager : Singleton<Manager>
+//public class Manager:MonoBehaviour
 {
     const string PrefsName = "Player";
-    protected Manager() {
-        //Debug.Log(json);
-    }//UserData = new User(); } // guarantee this will be always a singleton only - can't use the constructor!
+    protected Manager() { }
 
     void Awake()
     {
@@ -29,10 +28,15 @@ public class Manager : Singleton<Manager>
         {
 
         }
-        UnityInitializer.AttachToGameObject(Instance.gameObject);
-        SetAWS();
+        
+        //SetAWS();
+    }
+    void Start()
+    {
+        UnityInitializer.AttachToGameObject(gameObject);
     }
     #region UserData
+    private string[] UserDataNames = { "firstName", "lastName", "inviteBy", "inviteName", "email", "gender", "tel", "birthday", "interestings"};
     public int satang = 0;
     public string firstName = string.Empty;
     public string lastName = string.Empty;
@@ -53,23 +57,10 @@ public class Manager : Singleton<Manager>
     #region AppInfo
     //Cognito
     public string DataSetName = "Info";
-    private Dataset userInfo;
-    public Dataset UserInfo
-    {
-        get
-        {
-            if (userInfo == null)
-            {
-                userInfo = SyncManager.OpenOrCreateDataset(DataSetName);
-            }
-            return userInfo;
-        }
-    }
     //S3
     //public const string AppInfoS3BucketName = "testchainkchoonoi", AppInfoFileName = "Appinfo.txt";
     const string AppInfoUrl = @"https://s3-ap-northeast-1.amazonaws.com/testchainkchoonoi/Appinfo.txt";
-    //public string IdentityPoolId = "ap-northeast-1:d2051844-b612-4173-a365-838a4da96036";
-    public string IdentityPoolId;
+    public string IdentityPoolId = "ap-northeast-1:d2051844-b612-4173-a365-838a4da96036";
     public string regionName = RegionEndpoint.APNortheast1.SystemName;
     #endregion
     public void Save()
@@ -77,7 +68,21 @@ public class Manager : Singleton<Manager>
         PlayerPrefs.SetString(PrefsName, JsonUtility.ToJson(Instance));
         System.IO.File.WriteAllText(System.IO.Path.Combine(Application.streamingAssetsPath, "Appinfo.txt"), JsonUtility.ToJson(Instance));
     }
-
+    public bool IsUserRegistered
+    {
+        get
+        {
+            bool IsUserRegistered = true;
+            for(int i = 0; i< UserDataNames.Length;i++)
+            {
+                if (string.IsNullOrEmpty(UserInfo.Get(UserDataNames[i])))
+                {
+                    IsUserRegistered = false;
+                }
+            }
+            return IsUserRegistered;
+        }
+    }
     private IEnumerator DownloadAppInfo()
     {
         WWW www = new WWW(AppInfoUrl);
@@ -85,7 +90,7 @@ public class Manager : Singleton<Manager>
         JsonUtility.FromJsonOverwrite(www.text, Instance);
         SetAWS();
     }
-
+    #region AWS
     public void UpdateAppInfo()
     {
         Debug.Log(S3Client == null);
@@ -114,7 +119,18 @@ public class Manager : Singleton<Manager>
         //    }
         //});   
     }
-
+    private Dataset userInfo;
+    public Dataset UserInfo
+    {
+        get
+        {
+            if (userInfo == null)
+            {
+                userInfo = SyncManager.OpenOrCreateDataset(DataSetName);
+            }
+            return userInfo;
+        }
+    }
     private RegionEndpoint region;
     private RegionEndpoint Region
     {
@@ -174,16 +190,22 @@ public class Manager : Singleton<Manager>
             return s3Client;
         }
     }
-    public void FBLogin()
+    public void LoginCognitoWithFacebook()
     {
         Credentials.AddLogin("graph.facebook.com", AccessToken.CurrentAccessToken.TokenString);
     }
     private void SetAWS()
     {
+        Debug.Log("1");
         region = RegionEndpoint.GetBySystemName(regionName);
+        Debug.Log("2");
         credentials = new CognitoAWSCredentials(IdentityPoolId, Region);
+        Debug.Log("3");
         syncManager = new CognitoSyncManager(Credentials, new AmazonCognitoSyncConfig { RegionEndpoint = Region });
+        Debug.Log("4");
         lambdaClient = new AmazonLambdaClient(Credentials, Region);
+        Debug.Log("5");
         s3Client = new AmazonS3Client(Credentials, Region);
     }
+    #endregion
 }
