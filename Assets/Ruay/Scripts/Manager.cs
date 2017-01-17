@@ -10,33 +10,27 @@ using Amazon.Lambda.Model;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Facebook.Unity;
+using System.Collections.Generic;
+
 public class Manager : Singleton<Manager>
 //public class Manager:MonoBehaviour
 {
-    const string PrefsName = "Player";
+    const string PrefsName = "UserInfo";
     protected Manager() { }
 
     void Awake()
     {
-        //string json = JsonUtility.ToJson(Manager.Instance);
-        //Debug.Log(json);
         if (PlayerPrefs.GetString(PrefsName) != string.Empty)
         {
             JsonUtility.FromJsonOverwrite(PlayerPrefs.GetString(PrefsName), Instance);
         }
-        else
-        {
-
-        }
-        
-        //SetAWS();
     }
     void Start()
     {
         UnityInitializer.AttachToGameObject(gameObject);
     }
     #region UserData
-    private string[] UserDataNames = { "firstName", "lastName", "inviteBy", "inviteName", "email", "gender", "tel", "birthday", "interestings"};
+    private string[] UserInfoNames = { "firstName", "lastName", "inviteBy", "inviteName", "email", "gender", "tel", "birthday", "interestings"};
     public int satang = 0;
     public string firstName = string.Empty;
     public string lastName = string.Empty;
@@ -66,16 +60,16 @@ public class Manager : Singleton<Manager>
     public void Save()
     {
         PlayerPrefs.SetString(PrefsName, JsonUtility.ToJson(Instance));
-        System.IO.File.WriteAllText(System.IO.Path.Combine(Application.streamingAssetsPath, "Appinfo.txt"), JsonUtility.ToJson(Instance));
+        //System.IO.File.WriteAllText(System.IO.Path.Combine(Application.streamingAssetsPath, "Appinfo.txt"), JsonUtility.ToJson(Instance));
     }
     public bool IsUserRegistered
     {
         get
         {
             bool IsUserRegistered = true;
-            for(int i = 0; i< UserDataNames.Length;i++)
+            for(int i = 0; i< UserInfoNames.Length;i++)
             {
-                if (string.IsNullOrEmpty(UserInfo.Get(UserDataNames[i])))
+                if (string.IsNullOrEmpty(UserInfo.Get(UserInfoNames[i])))
                 {
                     IsUserRegistered = false;
                 }
@@ -83,14 +77,6 @@ public class Manager : Singleton<Manager>
             return IsUserRegistered;
         }
     }
-    private IEnumerator DownloadAppInfo()
-    {
-        WWW www = new WWW(AppInfoUrl);
-        yield return www;
-        JsonUtility.FromJsonOverwrite(www.text, Instance);
-        SetAWS();
-    }
-    #region AWS
     public void UpdateAppInfo()
     {
         Debug.Log(S3Client == null);
@@ -119,18 +105,29 @@ public class Manager : Singleton<Manager>
         //    }
         //});   
     }
+    private IEnumerator DownloadAppInfo()
+    {
+        WWW www = new WWW(AppInfoUrl);
+        yield return www;
+        JsonUtility.FromJsonOverwrite(www.text, Instance);
+        SetAWS();
+    }
+    #region AWS
     private Dataset userInfo;
-    public Dataset UserInfo
+    private Dataset UserInfo
     {
         get
         {
             if (userInfo == null)
             {
-                userInfo = SyncManager.OpenOrCreateDataset(DataSetName);
+                SetAWS();
             }
             return userInfo;
         }
     }
+    public delegate void OnSyncCallback(string e);
+    public OnSyncCallback OnSyncSuccess;
+    public OnSyncCallback OnSyncFailure;
     private RegionEndpoint region;
     private RegionEndpoint Region
     {
@@ -194,18 +191,75 @@ public class Manager : Singleton<Manager>
     {
         Credentials.AddLogin("graph.facebook.com", AccessToken.CurrentAccessToken.TokenString);
     }
+    public void SyncCognito()
+    {
+        //Set UserInfo
+        PutToDataset("firstName", firstName);
+        PutToDataset("lastName", lastName);
+        PutToDataset("tel", tel.ToString());
+        PutToDataset("inviteBy", inviteBy);
+        //UserInfo.Put("email", "");
+        PutToDataset("birthday", birthday.ToString());
+        PutToDataset("gender", gender);
+        PutToDataset("interest", interestings);
+        UserInfo.SynchronizeAsync();
+    }
+    private void PutToDataset(string name,string val)
+    {
+        if (!string.IsNullOrEmpty(val)){
+            UserInfo.Put(name, val);
+        }
+    }
+    private void HandleSyncSuccess(object sender, SyncSuccessEventArgs e)
+    {
+        Debug.Log("HandleSyncSuccess");
+        if (OnSyncSuccess != null)
+        {
+            OnSyncSuccess(string.Empty);
+        }
+    }
+    private void HandleSyncFailure(object sender, SyncFailureEventArgs e)
+    {
+        Debug.Log("HandleSyncFailure" + e.Exception.ToString());
+        if (OnSyncFailure != null)
+        {
+            OnSyncFailure(e.Exception.ToString());
+        }
+    }
+    private bool HandleSyncConflict(Amazon.CognitoSync.SyncManager.Dataset dataset, List<SyncConflict> conflicts)
+    {
+        List<Record> resolvedRecords = new List<Record>();
+        foreach (SyncConflict conflictRecord in conflicts)
+        {
+            // This example resolves all the conflicts using ResolveWithRemoteRecord 
+            // SyncManager provides the following default conflict resolution methods:
+            //      ResolveWithRemoteRecord - overwrites the local with remote records
+            //      ResolveWithLocalRecord - overwrites the remote with local records
+            //      ResolveWithValue - for developer logic  
+            resolvedRecords.Add(conflictRecord.ResolveWithRemoteRecord());
+        }
+
+        // resolves the conflicts in local storage
+        dataset.Resolve(resolvedRecords);
+
+        //updateUIValue();
+
+        // on return true the synchronize operation continues where it left,
+        //      returning false cancels the synchronize operation
+        return true;
+    }
+
     private void SetAWS()
     {
-        Debug.Log("1");
         region = RegionEndpoint.GetBySystemName(regionName);
-        Debug.Log("2");
-        credentials = new CognitoAWSCredentials(IdentityPoolId, Region);
-        Debug.Log("3");
-        syncManager = new CognitoSyncManager(Credentials, new AmazonCognitoSyncConfig { RegionEndpoint = Region });
-        Debug.Log("4");
-        lambdaClient = new AmazonLambdaClient(Credentials, Region);
-        Debug.Log("5");
-        s3Client = new AmazonS3Client(Credentials, Region);
+        credentials = new CognitoAWSCredentials(IdentityPoolId, region);
+        syncManager = new CognitoSyncManager(credentials, new AmazonCognitoSyncConfig { RegionEndpoint = region });
+        userInfo = SyncManager.OpenOrCreateDataset(DataSetName);
+        userInfo.OnSyncSuccess += HandleSyncSuccess;
+        userInfo.OnSyncFailure += HandleSyncFailure;
+        UserInfo.OnSyncConflict = HandleSyncConflict;
+        lambdaClient = new AmazonLambdaClient(credentials, region);
+        s3Client = new AmazonS3Client(credentials, region);
     }
     #endregion
 }

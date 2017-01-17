@@ -37,6 +37,14 @@ public class DatePickerController : MonoBehaviour {
 
         //dayScroller.scroller.JumpToDataIndex(5, 0.5f, 0.5f);
         //yearScroller.scroller.JumpToDataIndex(2000 - yearStart, 0.5f, 0.5f);
+        if(Manager.Instance.birthday != 0)
+        {
+            SetDate(Manager.Instance.birthday);
+        }
+        else
+        {
+            SetDate(20000101);
+        }
     }
 
     public void SetDate(int date)

@@ -6,9 +6,20 @@ using System.Collections.Generic;
 using Facebook.Unity;
 public class LoginPage : MonoBehaviour {
     [SerializeField]
-    private GameObject popup;
+    private RectTransform popup;
+    [SerializeField]
+    private CanvasGroup loading;
+    //[SerializeField]
+    //private CanvasGroup popupAlpha;
     [SerializeField]
     private Text statusMessage;
+    public void Start()
+    {
+        loading.gameObject.SetActive(true);
+        LeanTween.alphaCanvas(loading, 1,1).setDelay(1);
+        ConnectFacebook();
+    }
+
     public void ConnectFacebook()
     {
 #if USE_FACEBOOK_LOGIN
@@ -42,7 +53,7 @@ public class LoginPage : MonoBehaviour {
         {
             Debug.LogError(result.Error);
             statusMessage.text = result.Error;
-            popup.SetActive(true);
+            popup.gameObject.SetActive(true);
         }
         else
         {
@@ -54,7 +65,7 @@ public class LoginPage : MonoBehaviour {
             }
             else
             {
-                SceneManager.LoadScene("UserDataEditor");
+                SceneManager.LoadScene("UserInfoEditor");
             }
         }
     }
