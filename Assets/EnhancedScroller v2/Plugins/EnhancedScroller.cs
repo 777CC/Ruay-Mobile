@@ -1599,7 +1599,7 @@ namespace EnhancedUI.EnhancedScroller
         private void _ScrollRect_OnEndDrag(PointerEventData eventData)
         {
             //Debug.Log("loop : " + LinearVelocity);
-            //if (snapping && !_snapJumping)
+            if (snapping && !_snapJumping)
             {
                 // if the speed has dropped below the threshhold velocity
                 //if (eventData.delta == Vector2.zero)

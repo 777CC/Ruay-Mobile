@@ -36,7 +36,7 @@ public class UserInfo : MonoBehaviour
     InputField genderField;
 
     [SerializeField]
-    InterestingsController InterestingsController;
+    InterestController interestController;
     void Start()
     {
         nameField.text = Manager.Instance.firstName;
@@ -54,11 +54,24 @@ public class UserInfo : MonoBehaviour
         {
             femaleToggle.isOn = true;
         }
-        else if (Manager.Instance.gender != string.Empty)
+        else if (!string.IsNullOrEmpty(Manager.Instance.gender))
         {
+            Debug.Log("gender : " + Manager.Instance.gender);
             AnotherToggle.isOn = true;
             AnotherToggle.Select();
             genderField.text = Manager.Instance.gender;
+        }
+        if (!string.IsNullOrEmpty(Manager.Instance.interests))
+        {
+            string[] selecteds = Manager.Instance.interests.Split('#');
+            for (int i = 0; i < selecteds.Length; i++)
+            {
+                Debug.Log(selecteds[i]);
+                if (selecteds[i].Length >0)
+                {
+                    interestController.userInterests.Add(selecteds[i]);
+                }
+            }
         }
     }
     void NamePageValidtation()
@@ -92,7 +105,25 @@ public class UserInfo : MonoBehaviour
             Popup.gameObject.SetActive(true);
         }
     }
-    public void GenderValidation()
+    void BirthDayValidtation()
+    {
+        bool isValid = true;
+        PopupText.text = string.Empty;
+        if (Manager.Instance.birthday == 0)
+        {
+            PopupText.text += "-กรุณาใส่วันเกิด\n";
+            isValid = false;
+        }
+        if (isValid)
+        {
+            Validated();
+        }
+        else
+        {
+            Popup.gameObject.SetActive(true);
+        }
+    }
+    void GenderValidation()
     {
         bool isValid = true;
         PopupText.text = string.Empty;
@@ -110,30 +141,30 @@ public class UserInfo : MonoBehaviour
             Popup.gameObject.SetActive(true);
         }
     }
-    void InterestingsValidation()
+    void InterestValidation()
     {
         bool isValid = true;
         PopupText.text = string.Empty;
-        if (InterestingsController.userInterestings.Count < 3)
+        if (interestController.userInterests.Count < 3)
         {
             PopupText.text += "-กรุณาเลือกสิ่งที่สนใจอย่างน้อย 3 อย่าง";
             isValid = false;
         }
         if (isValid)
         {
-            Manager.Instance.interestings = InterestingsToString(InterestingsController.userInterestings);
+            SetInterest(InterestsToString(interestController.userInterests));
             Loading.gameObject.SetActive(true);
             //Validated();
             Manager.Instance.OnSyncSuccess = HandleSyncSuccess;
             Manager.Instance.OnSyncFailure = HandleSyncFailure;
-            Manager.Instance.SyncCognito();
+            Manager.Instance.UpdateUserInfo();
         }
         else
         {
             Popup.gameObject.SetActive(true);
         }
     }
-    private string InterestingsToString(List<string> names)
+    private string InterestsToString(List<string> names)
     {
         string str = string.Empty;
         names.ForEach(delegate (string name)
@@ -142,7 +173,6 @@ public class UserInfo : MonoBehaviour
         });
         return str;
     }
-
     private void Validated()
     {
         AllPageAni.SetTrigger(NextStr);
@@ -151,7 +181,6 @@ public class UserInfo : MonoBehaviour
     {
         SceneManager.LoadScene("Home");
     }
-
     private void HandleSyncFailure(string exception)
     {
         //var dataset = sender as Dataset;
@@ -173,13 +202,17 @@ public class UserInfo : MonoBehaviour
         {
             NamePageValidtation();
         }
+        else if (AllPageAni.GetCurrentAnimatorStateInfo(0).IsName("Base.BirthDay"))
+        {
+            BirthDayValidtation();
+        }
         else if (AllPageAni.GetCurrentAnimatorStateInfo(0).IsName("Base.Gender"))
         {
             GenderValidation();
         }
-        else if (AllPageAni.GetCurrentAnimatorStateInfo(0).IsName("Base.Interestings"))
+        else if (AllPageAni.GetCurrentAnimatorStateInfo(0).IsName("Base.Interest"))
         {
-            InterestingsValidation();
+            InterestValidation();
         }
         else
         {
@@ -230,16 +263,8 @@ public class UserInfo : MonoBehaviour
             Manager.Instance.tel = number;
         }
     }
-    public void SetInteresting(string data)
+    private void SetInterest(string data)
     {
-        Manager.Instance.interestings = data;
-    }
-    public void AddInteresting(string data)
-    {
-        Manager.Instance.interestings += "#" + data;
-    }
-    public void RemoveInteresting(string data)
-    {
-        Manager.Instance.interestings = Manager.Instance.interestings.Replace("#" + data, "");
+        Manager.Instance.interests = data;
     }
 }

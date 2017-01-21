@@ -61,27 +61,29 @@ public class DatePickerController : MonoBehaviour {
         monthScroller.scroller.ImmediatelySnap(month - 1);
         changeDayInMonth();
         dayScroller.scroller.ImmediatelySnap(day - 1);
+
+        //setDateData();
     }
 
     private void daySnapped(EnhancedScroller scroller, int cellIndex, int dataIndex)
     {
-        Debug.Log("day : " + cellIndex + " " + dataIndex);
+        //Debug.Log("day : " + cellIndex + " " + dataIndex);
         day = dataIndex + 1;
         setDateData();
     }
     private void monthSnapped(EnhancedScroller scroller, int cellIndex, int dataIndex)
     {
-        Debug.Log("month : " + cellIndex + " " + dataIndex);
+        //Debug.Log("month : " + cellIndex + " " + dataIndex);
         month = dataIndex + 1;
         setDateData();
-        //changeDayInMonth();
+        changeDayInMonth();
     }
     private void yearSnapped(EnhancedScroller scroller, int cellIndex, int dataIndex)
     {
         Debug.Log("year : " + cellIndex + " " + dataIndex);
-        year = dataIndex + yearStart + 1;
+        year = dataIndex + yearStart;
         setDateData();
-        //changeDayInMonth();
+        changeDayInMonth();
     }
     private void changeDayInMonth()
     {
@@ -90,7 +92,6 @@ public class DatePickerController : MonoBehaviour {
     }
     void setDateData()
     {
-        //Manager.Instance.birthday = (year * 10000) + (month * 100) + day;
-        Debug.Log((year * 10000) + (month * 100) + day);
+        Manager.Instance.birthday = (year * 10000) + (month * 100) + day;
     }
 }
