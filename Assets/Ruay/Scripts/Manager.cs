@@ -5,13 +5,12 @@ using Amazon.CognitoSync;
 using Amazon.CognitoIdentity;
 using Amazon.CognitoIdentity.Model;
 using Amazon.CognitoSync.SyncManager;
-using Amazon.Lambda;
-using Amazon.Lambda.Model;
 //using Amazon.S3;
 //using Amazon.S3.Model;
 using Facebook.Unity;
 using System.Collections.Generic;
 using System;
+using System.Text;
 
 public class Manager : Singleton<Manager>
 //public class Manager:MonoBehaviour
@@ -108,8 +107,6 @@ public class Manager : Singleton<Manager>
     private string appUrl = @"https://s3-ap-southeast-1.amazonaws.com/ruay/";
     [SerializeField]
     private string homeFlieName = "home.json";
-    [NonSerialized]
-    public string homeJson;
     //const string 
     [SerializeField]
     private string IdentityPoolId = "ap-northeast-1:d2051844-b612-4173-a365-838a4da96036";
@@ -119,6 +116,56 @@ public class Manager : Singleton<Manager>
     //private int updateTimeCount = 86400000;//milliseconds in Day.
     [SerializeField]
     private double updateTimeCount = 180000;
+    [SerializeField]
+    private Page[] pages;
+    [SerializeField]
+    private Round[] rounds;
+    public delegate void GetPage(Page page);
+    public void GetPageByName(string pageName,GetPage getPage)
+    {
+        if (pages != null)
+        {
+            Debug.Log("GetPageByName if");
+            if (getPage != null)
+            {
+               getPage(Array.Find(pages, p => p.Name == pageName));
+            }
+        }
+        else
+        {
+            Debug.Log("GetPageByName else if");
+            StartCoroutine( WaitForDonwloadHomeJson(pageName,getPage));
+        }
+    }
+    IEnumerator WaitForDonwloadHomeJson(string pageName,GetPage getPage)
+    {
+        yield return new WaitUntil(()=> pages != null);
+        Page page = Array.Find(pages, p => p.Name == pageName);
+        Debug.Log("Load page : " + page.Name);
+        getPage(page);
+    }
+    public delegate void GetRound(Round round);
+    public void GetRoundById(string roundId, GetRound getRound)
+    {
+        if (pages != null)
+        {
+            if (getRound != null)
+            {
+                getRound(Array.Find(rounds, p => p.id == roundId));
+            }
+        }
+        else
+        {
+            StartCoroutine(WaitForDonwloadHomeJson(roundId, getRound));
+        }
+    }
+    IEnumerator WaitForDonwloadHomeJson(string roundId, GetRound getRound)
+    {
+        yield return new WaitUntil(() => pages != null);
+        Round round = Array.Find(rounds, p => p.id == roundId);
+        Debug.Log("Load page : " + round.Name);
+        getRound(round);
+    }
     #endregion
     public void Save()
     {
@@ -147,10 +194,10 @@ public class Manager : Singleton<Manager>
             return IsUserRegistered;
         }
     }
-    public void UpdateAppInfo()
+    public void UpdateAppInfo(System.Action callback)
     {
         Debug.Log("UpdateAppInfo");
-        StartCoroutine(DownloadAppInfo());
+        StartCoroutine(DownloadAppInfo(callback));
         //S3Client.GetObjectAsync(AppInfoS3BucketName, AppInfoFileName, (responseObj) =>
         //{
         //    if (responseObj.Exception == null)
@@ -175,7 +222,7 @@ public class Manager : Singleton<Manager>
         //    }
         //});   
     }
-    private IEnumerator DownloadAppInfo()
+    private IEnumerator DownloadAppInfo(System.Action callback)
     {
         WWW www = new WWW(appInfoUrl);
         yield return www;
@@ -191,6 +238,7 @@ public class Manager : Singleton<Manager>
             JsonUtility.FromJsonOverwrite(www.text, Instance);
             SetAWS();
             Save();
+            callback();
         }catch
         {
             Debug.Log("cannot update appinfo");
@@ -209,28 +257,49 @@ public class Manager : Singleton<Manager>
             return userInfo;
         }
     }
-    private Coroutine homeJsonCoroutine;
-    public void DownloadHomeJson()
+    public void DownloadHomeJson(Action callback)
     {
-        if(homeJsonCoroutine == null)
-        {
-            homeJsonCoroutine = StartCoroutine(downloadHomeJson());
-        }
+        StartCoroutine(downloadHomeJson(callback));
     }
-    IEnumerator downloadHomeJson()
+    IEnumerator downloadHomeJson(Action callback)
     {
         WWW www = new WWW(appUrl + homeFlieName);
-        //WWW www = new WWW(appUrl);
         Debug.Log(www.url);
-        yield return !www.isDone;
-        homeJson = www.text;
-        if (OnHomeDownloadSuccess != null)
+        yield return www;
+        //Debug.Log(www.text);
+        //pages = JsonHelper.getJsonArray<Page>(www.text);
+        //byte[] bytes = Encoding.Default.GetBytes(www.text);
+        string json = Encoding.Unicode.GetString(www.bytes);
+        Debug.Log(json);
+        JsonUtility.FromJsonOverwrite(json, Instance);
+
+        SetPages();
+        if (callback != null)
         {
-            OnHomeDownloadSuccess(www.text);
+            callback();
         }
-        Debug.Log(homeJson);
     }
-    public OnSyncCallback OnHomeDownloadSuccess;
+    void SetPages()
+    {
+        foreach (Page page in pages)
+        {
+            if (page.Name != "Home")
+            {
+                page.Cards.Insert(0, BackPageCard);
+            }
+        }
+    }
+    Card BackPageCard
+    {
+        get
+        {
+            Card card = new Card();
+            card.Name = "กลับ";
+            card.ViewType = CardType.IconWithName;
+            card.NextPage = "Back";
+            return card;
+        }
+    }
     public OnSyncCallback OnError;
     public void Error(string e)
     {
@@ -276,18 +345,18 @@ public class Manager : Singleton<Manager>
             return credentials;
         }
     }
-    private IAmazonLambda lambdaClient;
-    public IAmazonLambda LambdaClient
-    {
-        get
-        {
-            if (lambdaClient == null)
-            {
-                SetAWS();
-            }
-            return lambdaClient;
-        }
-    }
+    //private IAmazonLambda lambdaClient;
+    //public IAmazonLambda LambdaClient
+    //{
+    //    get
+    //    {
+    //        if (lambdaClient == null)
+    //        {
+    //            SetAWS();
+    //        }
+    //        return lambdaClient;
+    //    }
+    //}
     //private IAmazonS3 s3Client;
     //public IAmazonS3 S3Client
     //{
@@ -380,7 +449,7 @@ public class Manager : Singleton<Manager>
         userInfo.OnSyncSuccess += HandleSyncSuccess;
         userInfo.OnSyncFailure += HandleSyncFailure;
         UserInfo.OnSyncConflict = HandleSyncConflict;
-        lambdaClient = new AmazonLambdaClient(credentials, region);
+        //lambdaClient = new AmazonLambdaClient(credentials, region);
         //s3Client = new AmazonS3Client(credentials, region);
     }
     private double GetUnixTime()
@@ -390,6 +459,13 @@ public class Manager : Singleton<Manager>
         //return diff.TotalMilliseconds.ToString();
         //return ((int)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalMilliseconds).ToString();
         return (DateTime.UtcNow.Subtract(DateTime.MinValue.AddYears(1969)).TotalMilliseconds + updateTimeCount);
+    }
+    #endregion
+
+    #region App Service
+    public void BuyRound(string round,string number)
+    {
+        Debug.Log("Buy :" + round + number);
     }
     #endregion
 }

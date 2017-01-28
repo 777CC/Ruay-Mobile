@@ -31,8 +31,6 @@ using Amazon.Runtime;
 using Amazon.CognitoIdentity;
 using Amazon.CognitoIdentity.Model;
 using Amazon.CognitoSync.SyncManager;
-using Amazon.Lambda;
-using Amazon.Lambda.Model;
 //using Amazon.S3;
 //using Amazon.S3.Model;
 using Facebook.Unity;

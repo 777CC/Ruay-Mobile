@@ -63,7 +63,7 @@ public class LoginPage : MonoBehaviour {
             {
                 Manager.Instance.facebookId = result.ResultDictionary["user_id"].ToString();
             }
-            Manager.Instance.DownloadHomeJson();
+            Manager.Instance.DownloadHomeJson(null);
             Manager.Instance.OnSyncSuccess = HandleSyncSuccess;
             Manager.Instance.OnSyncFailure = HandleSyncFailure;
             Manager.Instance.LoginCognitoWithFacebook();
@@ -94,7 +94,7 @@ public class LoginPage : MonoBehaviour {
     {
         yield return new WaitForSeconds(60);
         //HandleSyncFailure("");
-        Manager.Instance.UpdateAppInfo();
+        Manager.Instance.UpdateAppInfo(()=> { });
         yield return new WaitForSeconds(15);
         popup.SetActive(true);
         statusMessage.text = "กรุณาลองใหม่อีกครั้ง\nหรือโหลดเวอร์ชั่นใหม่";

@@ -1,0 +1,96 @@
+[
+    {
+      "Name": "Home",
+      "Cards": [
+        {
+          "Name": "111",
+          "Photo": "p1",
+          "NextPage": "Test",
+          "Description": "",
+          "ViewType": "PhotoWithName"
+        },
+        {
+          "Name": "222",
+          "Photo": "p2",
+          "NextPage": "Test",
+          "Description": "",
+          "ViewType": "IconWithName"
+        },
+        {
+          "Name": "222",
+          "Photo": "p2",
+          "NextPage": "Test",
+          "Description": "",
+          "ViewType": "OnlyPhoto"
+        },
+        {
+          "Name": "222",
+          "Photo": "p2",
+          "NextPage": "Test",
+          "Description": "",
+          "ViewType": "OnlyIcon"
+        },
+        {
+          "Name": "222",
+          "Photo": "p2",
+          "NextPage": "Test",
+          "Description": "",
+          "ViewType": "OnlyName"
+        },
+        {
+          "Name": "222",
+          "Photo": "p2",
+          "NextPage": "Test",
+          "Description": "",
+          "ViewType": "PhotoWithName"
+        },
+        {
+          "Name": "222",
+          "Photo": "p2",
+          "NextPage": "Test",
+          "Description": "",
+          "ViewType": "PhotoWithName"
+        },
+        {
+          "Name": "222",
+          "Photo": "p2",
+          "NextPage": "Test",
+          "Description": "",
+          "ViewType": "PhotoWithName"
+        }
+      ]
+    },
+    {
+      "Name": "Test",
+      "Cards": [
+        {
+          "Name": "test1",
+          "Photo": "p1",
+          "NextPage": "",
+          "Description": "",
+          "ViewType": "PhotoWithName"
+        },
+        {
+          "Name": "test2",
+          "Photo": "p2",
+          "NextPage": "",
+          "Description": "",
+          "ViewType": "PhotoWithName"
+        },
+        {
+          "Name": "test3",
+          "Photo": "p2",
+          "NextPage": "",
+          "Description": "",
+          "ViewType": "PhotoWithName"
+        },
+        {
+          "Name": "test4",
+          "Photo": "p2",
+          "NextPage": "",
+          "Description": "",
+          "ViewType": "PhotoWithName"
+        }
+      ]
+    }
+]
