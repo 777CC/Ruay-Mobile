@@ -122,6 +122,7 @@ public class Manager : Singleton<Manager>
     }
     public void GetTicketById(int ticketIndex, GetTicket getTicket)
     {
+        Debug.Log("GetTicketById :" + ticketIndex);
         if (tickets != null)
         {
             if (getTicket != null && ticketIndex < tickets.Length)
@@ -130,11 +131,6 @@ public class Manager : Singleton<Manager>
             }
         }
     }
-    //IEnumerator WaitForDonwloadHomeJson(string itemId, GetTicket getItem)
-    //{
-    //    yield return new WaitUntil(() => items != null);
-    //    getItem(Array.Find(items, item => item. == itemId));
-    //}
     IEnumerator WaitForDonwloadHomeJson(string roundId, GetRound getRound)
     {
         yield return new WaitUntil(() => pages != null);
@@ -281,6 +277,7 @@ public class Manager : Singleton<Manager>
                     card.NextPage = "Ticket" + i;
                     card.ViewType = CardType.NameWithLine;
                     page.Cards.Add(card);
+                    Debug.Log(JsonUtility.ToJson(card));
                 }
             }
             else
@@ -453,7 +450,6 @@ public class Manager : Singleton<Manager>
         }
         interests = UserInfo.Get("interests");
         tickets = JsonHelper.getJsonArray<Ticket>(UserInfo.Get("tickets"));
-        Debug.Log(tickets);
         SetTicketPage();
         Save();
         if (OnSyncSuccess != null)

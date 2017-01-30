@@ -56,10 +56,7 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
         if (pageName.Length >= 6)
         {
             round = pageName.Substring(0, 6);
-        }
-        if (pageName.Length >= 4)
-        {
-            item = pageName.Substring(0, 4);
+            item = pageName.Substring(0, 6);
         }
         if (pageName == "Back")
         {
@@ -82,9 +79,8 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
         }
         else if (item == "Ticket")
         {
-
             int index;
-            if (int.TryParse(pageName.Substring(4, pageName.Length - 4), out index))
+            if (int.TryParse(pageName.Substring(6, pageName.Length - 6), out index))
             {
                 Manager.Instance.GetTicketById(index, (it,r) => { ShowTicketDesc("TicketDescPopup", it,r); });
             }
@@ -165,6 +161,7 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
         cellView.SetData(currentPage.Cards[dataIndex]);
         cellView.button.onClick.RemoveAllListeners();
         cellView.button.onClick.AddListener(() => {
+            Debug.Log("Nextpage : " + currentPage.Cards[dataIndex].NextPage);
             NextPage(currentPage.Cards[dataIndex].NextPage); });
         return cellView;
     }
