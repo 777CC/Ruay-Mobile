@@ -32,46 +32,6 @@ public class Manager : Singleton<Manager>
         }
         SetAWS();
     }
-    //void Update()
-    //{
-    //    if (Input.GetMouseButtonDown(0))
-    //    {
-    //        Handheld.Vibrate();
-    //    }
-    //}
-    public void UpdateUserInfo()
-    {
-        double time = GetUnixTime();
-        if ((updateTime + updateTimeCount < time) || (updateTime - updateTimeCount > time))
-        {
-            Debug.Log("UpdateUserInfo : " + time + " : " + ((updateTime + updateTimeCount) - time));
-            Debug.Log("tel " + tel + " + " + birthday);
-            PutToDataset("updateTime", time.ToString("0"));
-            PutToDataset("facebookId", facebookId);
-            PutToDataset("firstName", firstName);
-            PutToDataset("lastName", lastName);
-            PutToDataset("tel", tel.ToString());
-            PutToDataset("inviteBy", inviteBy);
-            PutToDataset("birthday", birthday.ToString());
-            PutToDataset("gender", gender);
-            PutToDataset("interests", interests);
-            UserInfo.SynchronizeAsync();
-            foreach (KeyValuePair<string, string> entry in UserInfo.ActiveRecords)
-            {
-                Debug.Log("ar " + entry.Key + " : " + entry.Value);
-            }
-            foreach (Record rec in UserInfo.Records)
-            {
-                Debug.Log("rec " + rec.Key + " : " + rec.Value);
-            }
-        }
-        else
-        {
-            Debug.Log("No UpdateUserInfo : " + time + " : " + updateTime + updateTimeCount);
-            OnSyncSuccess(string.Empty);
-        }
-        Save();
-    }
     #region UserData
     private string[] UserInfoKeys = { "firstName", "lastName", "gender", "tel", "birthday", "interests" };
     public string facebookId = string.Empty;
@@ -89,8 +49,10 @@ public class Manager : Singleton<Manager>
     [SerializeField]
     public int birthday = 0;
     public string interests = string.Empty;
-    public Ticket[] Tickets;
-    public Reward[] Rewards;
+    [SerializeField]
+    private Ticket[] tickets;
+    [SerializeField]
+    private Reward[] Rewards;
     public string[] Event;
     #endregion
     
@@ -116,8 +78,10 @@ public class Manager : Singleton<Manager>
     //private int updateTimeCount = 86400000;//milliseconds in Day.
     [SerializeField]
     private double updateTimeCount = 180000;
+    const string HomePageName = "Home";
+    const string MyTicketName = "MyTickets";
     [SerializeField]
-    private Page[] pages;
+    private List<Page> pages;
     [SerializeField]
     private Round[] rounds;
     public delegate void GetPage(Page page);
@@ -125,26 +89,23 @@ public class Manager : Singleton<Manager>
     {
         if (pages != null)
         {
-            Debug.Log("GetPageByName if");
             if (getPage != null)
             {
-               getPage(Array.Find(pages, p => p.Name == pageName));
+               getPage(pages.Find(page => page.Name == pageName));
             }
         }
         else
         {
-            Debug.Log("GetPageByName else if");
             StartCoroutine( WaitForDonwloadHomeJson(pageName,getPage));
         }
     }
     IEnumerator WaitForDonwloadHomeJson(string pageName,GetPage getPage)
     {
         yield return new WaitUntil(()=> pages != null);
-        Page page = Array.Find(pages, p => p.Name == pageName);
-        Debug.Log("Load page : " + page.Name);
-        getPage(page);
+        getPage(pages.Find(page => page.Name == pageName));
     }
     public delegate void GetRound(Round round);
+    public delegate void GetTicket(Ticket item,Round round);
     public void GetRoundById(string roundId, GetRound getRound)
     {
         if (pages != null)
@@ -159,12 +120,25 @@ public class Manager : Singleton<Manager>
             StartCoroutine(WaitForDonwloadHomeJson(roundId, getRound));
         }
     }
+    public void GetTicketById(int ticketIndex, GetTicket getTicket)
+    {
+        if (tickets != null)
+        {
+            if (getTicket != null && ticketIndex < tickets.Length)
+            {
+                getTicket(tickets[ticketIndex], Array.Find(rounds, r => r.id == tickets[ticketIndex].roundId));
+            }
+        }
+    }
+    //IEnumerator WaitForDonwloadHomeJson(string itemId, GetTicket getItem)
+    //{
+    //    yield return new WaitUntil(() => items != null);
+    //    getItem(Array.Find(items, item => item. == itemId));
+    //}
     IEnumerator WaitForDonwloadHomeJson(string roundId, GetRound getRound)
     {
         yield return new WaitUntil(() => pages != null);
-        Round round = Array.Find(rounds, p => p.id == roundId);
-        Debug.Log("Load page : " + round.Name);
-        getRound(round);
+        getRound(Array.Find(rounds, p => p.id == roundId));
     }
     #endregion
     public void Save()
@@ -266,14 +240,10 @@ public class Manager : Singleton<Manager>
         WWW www = new WWW(appUrl + homeFlieName);
         Debug.Log(www.url);
         yield return www;
-        //Debug.Log(www.text);
-        //pages = JsonHelper.getJsonArray<Page>(www.text);
-        //byte[] bytes = Encoding.Default.GetBytes(www.text);
-        string json = Encoding.Unicode.GetString(www.bytes);
-        Debug.Log(json);
-        JsonUtility.FromJsonOverwrite(json, Instance);
-
+        Debug.Log(www.text);
+        JsonUtility.FromJsonOverwrite(www.text, Instance);
         SetPages();
+        SetTicketPage();
         if (callback != null)
         {
             callback();
@@ -281,21 +251,67 @@ public class Manager : Singleton<Manager>
     }
     void SetPages()
     {
-        foreach (Page page in pages)
+        pages.ForEach((page) =>
         {
-            if (page.Name != "Home")
+            if (page.Name != HomePageName && page.Name != MyTicketName)
             {
                 page.Cards.Insert(0, BackPageCard);
             }
+        });
+    }
+    void SetTicketPage()
+    {
+        Page page = pages.Find(p => p.Name == MyTicketName);
+        if(page == null)
+        {
+            page = new Page();
+            page.Cards = new List<Card>();
         }
+        page.Cards.Clear();
+        page.Cards.Add(BackPageCard);
+        if (tickets != null)
+        {
+            if (tickets.Length > 0)
+            {
+                for (int i = 0; i < tickets.Length; i++)
+                {
+                    Card card = new Card();
+                    Round round = Array.Find(rounds, r => r.id == tickets[i].roundId);
+                    card.Name = round.Name;
+                    card.NextPage = "Ticket" + i;
+                    card.ViewType = CardType.NameWithLine;
+                    page.Cards.Add(card);
+                }
+            }
+            else
+            {
+                SetEmptyTicket(page.Cards);
+            }
+        }
+        else
+        {
+            SetEmptyTicket(page.Cards);
+        }
+        page.Name = MyTicketName;
+        if (!pages.Contains(page))
+        {
+            pages.Add(page);
+        }
+    }
+    void SetEmptyTicket(List<Card> cards)
+    {
+        Card card = new Card();
+        card.Name = "ไม่มีสลากอะ";
+        card.ViewType = CardType.NameWithoutBG;
+        cards.Add(card);
     }
     Card BackPageCard
     {
         get
         {
             Card card = new Card();
-            card.Name = "กลับ";
-            card.ViewType = CardType.IconWithName;
+            card.Name = "< กลับ";
+            card.ViewType = CardType.NameWithoutBG;
             card.NextPage = "Back";
             return card;
         }
@@ -375,6 +391,39 @@ public class Manager : Singleton<Manager>
         Credentials.AddLogin("graph.facebook.com", AccessToken.CurrentAccessToken.TokenString);
         UpdateUserInfo();
     }
+    public void UpdateUserInfo()
+    {
+        double time = GetUnixTime();
+        if ((updateTime + updateTimeCount < time) || (updateTime - updateTimeCount > time))
+        {
+            Debug.Log("UpdateUserInfo : " + time + " : " + ((updateTime + updateTimeCount) - time));
+            Debug.Log("tel " + tel + " + " + birthday);
+            PutToDataset("updateTime", time.ToString("0"));
+            PutToDataset("facebookId", facebookId);
+            PutToDataset("firstName", firstName);
+            PutToDataset("lastName", lastName);
+            PutToDataset("tel", tel.ToString());
+            PutToDataset("inviteBy", inviteBy);
+            PutToDataset("birthday", birthday.ToString());
+            PutToDataset("gender", gender);
+            PutToDataset("interests", interests);
+            UserInfo.SynchronizeAsync();
+            //foreach (KeyValuePair<string, string> entry in UserInfo.ActiveRecords)
+            //{
+            //    Debug.Log("ar " + entry.Key + " : " + entry.Value);
+            //}
+            //foreach (Record rec in UserInfo.Records)
+            //{
+            //    Debug.Log("rec " + rec.Key + " : " + rec.Value);
+            //}
+        }
+        else
+        {
+            Debug.Log("No UpdateUserInfo : " + time + " : " + updateTime + updateTimeCount);
+            OnSyncSuccess(string.Empty);
+        }
+        Save();
+    }
     private void PutToDataset(string key,string val)
     {
         if (!string.IsNullOrEmpty(val)){
@@ -403,6 +452,9 @@ public class Manager : Singleton<Manager>
             birthday = date;
         }
         interests = UserInfo.Get("interests");
+        tickets = JsonHelper.getJsonArray<Ticket>(UserInfo.Get("tickets"));
+        Debug.Log(tickets);
+        SetTicketPage();
         Save();
         if (OnSyncSuccess != null)
         {
@@ -463,9 +515,9 @@ public class Manager : Singleton<Manager>
     #endregion
 
     #region App Service
-    public void BuyRound(string round,string number)
+    public void BuyRound(string round,string number,int amount)
     {
-        Debug.Log("Buy :" + round + number);
+        Debug.Log("Buy :" + round + " : " + number + " : "+ amount);
     }
     #endregion
 }

@@ -26,12 +26,16 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
         //card = new SmallList<Card>();
         Manager.Instance.DownloadHomeJson(()=> { });
         NextPage("Home");
+        scroller.Delegate = this;
     }
     void LoadPage(Page nextPage)
     {
-        currentPage = nextPage;
-        scroller.Delegate = this;
-        scroller.ReloadData();
+        if (nextPage != null)
+        {
+            Debug.Log("Load page : " + nextPage.Name);
+            currentPage = nextPage;
+            scroller.ReloadData();
+        }
     }
     void NextPage(Page nextPage)
     {
@@ -48,11 +52,15 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
     void NextPage(string pageName)
     {
         string round = string.Empty;
+        string item = string.Empty;
         if (pageName.Length >= 6)
         {
             round = pageName.Substring(0, 6);
         }
-        Debug.Log(pageName + " : " + pageName.Length);
+        if (pageName.Length >= 4)
+        {
+            item = pageName.Substring(0, 4);
+        }
         if (pageName == "Back")
         {
             BackPage();
@@ -60,17 +68,26 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
         else if (round == "RoundA")
         {
             string id = pageName.Substring(5, pageName.Length - 5);
-            Manager.Instance.GetRoundById(id, (r) => { PopRound("LottoPopup", r); });
+            Manager.Instance.GetRoundById(id, (r) => { ShowRound("LottoPopup", r); });
         }
         else if (round == "RoundB")
         {
             string id = pageName.Substring(5, pageName.Length - 5);
-            Manager.Instance.GetRoundById(id, (r) => { PopRound("Round2ChoicePopup", r); });
+            Manager.Instance.GetRoundById(id, (r) => { ShowRound("RoundChoicePopup", r); });
         }
         else if (round == "RoundC")
         {
             string id = pageName.Substring(5, pageName.Length - 5);
-            Manager.Instance.GetRoundById(id, (r) => { PopRound("Round2ChoicePopup", r); });
+            Manager.Instance.GetRoundById(id, (r) => { ShowRound("RoundChoicePopup", r); });
+        }
+        else if (item == "Ticket")
+        {
+
+            int index;
+            if (int.TryParse(pageName.Substring(4, pageName.Length - 4), out index))
+            {
+                Manager.Instance.GetTicketById(index, (it,r) => { ShowTicketDesc("TicketDescPopup", it,r); });
+            }
         }
         else if (!string.IsNullOrEmpty(pageName))
         {
@@ -78,12 +95,19 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
             ChangePageEffect();
         }
     }
-    void PopRound(string prefabName,Round r)
+    void ShowRound(string prefabName,Round r)
     {
         RoundPage round = Instantiate(Resources.Load<GameObject>(prefabName)).GetComponent<RoundPage>();
         round.transform.SetParent(FindObjectOfType<Canvas>().transform, false);
         round.transform.SetSiblingIndex(homeCanvasGroup.transform.GetSiblingIndex() + 1);
         round.SetRound(r);
+    }
+    void ShowTicketDesc(string prefabName, Ticket ticket,Round round)
+    {
+        TicketDescPopup popup = Instantiate(Resources.Load<GameObject>(prefabName)).GetComponent<TicketDescPopup>();
+        popup.transform.SetParent(FindObjectOfType<Canvas>().transform, false);
+        popup.transform.SetSiblingIndex(homeCanvasGroup.transform.GetSiblingIndex() + 1);
+        popup.SetTicket(round ,ticket);
     }
     void BackPage()
     {
@@ -122,6 +146,12 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
                 break;
             case CardType.NameOnly:
                 height = 706;
+                break;
+            case CardType.NameWithoutBG:
+                height = 200;
+                break;
+            case CardType.NameWithLine:
+                height = 200;
                 break;
             default:
                 height = 706;

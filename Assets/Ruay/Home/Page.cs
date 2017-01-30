@@ -8,7 +8,9 @@ public enum CardType
     PhotoOnly = 2,
     IconWithName = 3,
     IconOnly = 4,
-    NameOnly = 5
+    NameOnly = 5,
+    NameWithoutBG = 6,
+    NameWithLine = 7,
 }//706
 [Serializable]
 public class Page{

@@ -16,7 +16,7 @@ AWS Setting
 
 Aware
 - Unity android must set Stripping Level to Disbled, otherwise it's can't instance AWSPrefab.
-
+- home.json must be [Unicode (UTF-8 without signature)-Codepage 65001] format.
 ManualResize simple
 {
   "imageName": "test.jpg",

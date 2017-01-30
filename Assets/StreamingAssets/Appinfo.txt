@@ -1,1 +1,0 @@
-{"satang":0,"firstName":"chain","lastName":"choonoi","inviteBy":"123456","inviteName":"0000","updateTime":0,"dailyRawardTime":0,"email":"chain777@hotmail.com","gender":"male","tel":847052202,"birthday":19890807,"interestings":"#fdsfaf#fgdsfes","Event":[],"DataSetName":"Info","IdentityPoolId":"ap-northeast-1:d2051844-b612-4173-a365-838a4da96036","regionName":"ap-northeast-1"}
