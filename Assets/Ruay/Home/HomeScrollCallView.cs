@@ -8,59 +8,66 @@ using System.Runtime.InteropServices;
 public class HomeScrollCallView : EnhancedScrollerCellView{
     public Text NameText;
     public GameObject Mask;
-    public Image Photo;
+    public RawImage Photo;
     public Button button;
     public Image BG;
     public Image Line;
+    private string currentPhotoName;
     public void SetData(Card data)
     {
+        NameText.text = data.Name;
+        currentPhotoName = data.Photo;
         switch (data.ViewType)
         {
             case CardType.PhotoWithName:
-                Mask.SetActive(true);
-                Line.gameObject.SetActive(false);
-                BG.enabled = true;
-                NameText.alignment = TextAnchor.MiddleCenter;
+                SetView(true, true, false, TextAnchor.MiddleLeft);
                 break;
             case CardType.PhotoOnly:
-                Mask.SetActive(true);
-                Line.gameObject.SetActive(false);
-                BG.enabled = true;
-                NameText.alignment = TextAnchor.MiddleCenter;
+                SetView(true, true, false, TextAnchor.MiddleLeft);
                 break;
             case CardType.IconWithName:
-                Mask.SetActive(false);
-                Line.gameObject.SetActive(false);
-                BG.enabled = true;
-                NameText.alignment = TextAnchor.MiddleCenter;
+                SetView(true, false, false, TextAnchor.MiddleLeft);
                 break;
             case CardType.IconOnly:
-                Mask.SetActive(false);
-                Line.gameObject.SetActive(false);
-                BG.enabled = true;
-                NameText.alignment = TextAnchor.MiddleCenter;
+                SetView(true, false, false, TextAnchor.MiddleLeft);
                 break;
             case CardType.NameOnly:
-                Mask.SetActive(false);
-                Line.gameObject.SetActive(false);
-                BG.enabled = true;
-                NameText.alignment = TextAnchor.MiddleCenter;
+                SetView(false, false, false, TextAnchor.MiddleLeft);
                 break;
-            case CardType.NameWithoutBG:
-                Mask.SetActive(false);
-                Line.gameObject.SetActive(false);
-                BG.enabled = false;
-                NameText.alignment = TextAnchor.MiddleLeft;
+            case CardType.NameWithBG:
+                SetView(true, false, false, TextAnchor.MiddleLeft);
                 break;
             case CardType.NameWithLine:
-                Mask.SetActive(false);
-                Line.gameObject.SetActive(true);
-                BG.enabled = false;
-                NameText.alignment = TextAnchor.MiddleLeft;
+                SetView(false, false, true, TextAnchor.MiddleLeft);
                 break;
             default:
                 break;
         }
-        NameText.text = data.Name;
+    }
+    void LoadPhoto(string name)
+    {
+        Manager.Instance.GetPhotoByName(name, SetPhoto);
+    }
+    void SetPhoto(string name,Texture tex)
+    {
+        if(name == currentPhotoName)
+        {
+            Photo.texture = tex;
+        }
+    }
+    void SetView(bool isBG,bool isPhoto,bool isLine, TextAnchor nameAli)
+    {
+        BG.enabled = isBG;
+        Mask.SetActive(isPhoto);
+        if (!string.IsNullOrEmpty(currentPhotoName))
+        {
+            LoadPhoto(currentPhotoName);
+        }
+        else
+        {
+            Photo.texture = null;
+        }
+        Line.enabled = isLine;
+        NameText.alignment = nameAli;
     }
 }

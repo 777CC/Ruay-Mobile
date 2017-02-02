@@ -13,12 +13,32 @@ public class LoginPage : MonoBehaviour {
     //private CanvasGroup popupAlpha;
     [SerializeField]
     private Text statusMessage;
+    [SerializeField]
+    private RectTransform checkerImage;
     public void Start()
     {
         loading.gameObject.SetActive(true);
         LeanTween.alphaCanvas(loading, 1,0.3f).setDelay(0.3f);
         ConnectFacebook();
+        //StartCoroutine(CheckScreenSize());
     }
+    //IEnumerator CheckScreenSize()
+    //{
+    //    yield return new WaitForSeconds(0.1f);
+        
+    //        var worldCorners = new Vector3[4];
+    //    checkerImage.GetWorldCorners(worldCorners);
+    //    var result = new Rect(
+    //                  worldCorners[0].x,
+    //                  worldCorners[0].y,
+    //                  worldCorners[2].x - worldCorners[0].x,
+    //                  worldCorners[2].y - worldCorners[0].y);
+    //    Debug.Log((int)result.width);
+    //    Debug.Log((int)result.height);
+    //    Debug.Log(Manager.Instance.ImageSizeHeight);
+    //    Debug.Log(Manager.Instance.ImageSizeWidth);
+    //    Debug.Log(Screen.width);
+    //}
     public void ConnectFacebook()
     {
 #if USE_FACEBOOK_LOGIN

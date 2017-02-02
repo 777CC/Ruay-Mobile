@@ -10,7 +10,9 @@ using Amazon.CognitoSync.SyncManager;
 using Facebook.Unity;
 using System.Collections.Generic;
 using System;
+using System.IO;
 using System.Text;
+using System.Threading;
 
 public class Manager : Singleton<Manager>
 //public class Manager:MonoBehaviour
@@ -66,7 +68,7 @@ public class Manager : Singleton<Manager>
     const string appInfoUrl = @"https://s3-ap-southeast-1.amazonaws.com/ruay/Appinfo.json";
     //const string info = "Appinfo.json";
     [SerializeField]
-    private string appUrl = @"https://s3-ap-southeast-1.amazonaws.com/ruay/";
+    private string appUrl = @"https://chainchoonoi.com/";
     [SerializeField]
     private string homeFlieName = "home.json";
     //const string 
@@ -80,10 +82,101 @@ public class Manager : Singleton<Manager>
     private double updateTimeCount = 180000;
     const string HomePageName = "Home";
     const string MyTicketName = "MyTickets";
+    const string PhotoDirName = "Photo";
+    private const float imageW = 1032f;
+    private const float screenW = 1080f;
+    private const float screenHRatio = 2.048f;
+    int imageSizeWidth, imageSizeHeight;
+    public int ImageSizeWidth
+    {
+        get
+        {
+            if(imageSizeWidth == 0)
+            {
+                imageSizeWidth = (int)((imageW * Screen.width) / (screenW));
+            }
+            return imageSizeWidth;
+        }
+    }
+    public int ImageSizeHeight
+    {
+        get
+        {
+            if (imageSizeHeight == 0)
+            {
+                imageSizeHeight = (int)(ImageSizeWidth / screenHRatio);
+            }
+            return imageSizeHeight;
+        }
+    }
     [SerializeField]
     private List<Page> pages;
     [SerializeField]
     private Round[] rounds;
+    public delegate void GetPhoto(string name,Texture tex);
+    public void GetPhotoByName(string name,GetPhoto getPhoto)
+    {
+        StartCoroutine(LoadPhoto(name, getPhoto));
+    }
+    string dataPath
+    {
+        get {
+            string path;
+#if UNITY_EDITOR
+            path = "file:" + Application.persistentDataPath;
+#elif UNITY_ANDROID
+         path = "jar:file://"+ Application.persistentDataPath;
+#elif UNITY_IOS
+         path = "file:" + Application.persistentDataPath;
+#else
+         //Desktop (Mac OS or Windows)
+         path = "file:"+ Application.persistentDataPath;
+#endif
+            return path;
+    }
+    }
+IEnumerator LoadPhoto(string name, GetPhoto getPhoto)
+    {
+        string subDir = Path.Combine(PhotoDirName, name);
+        string ioDir = Path.Combine(Application.persistentDataPath, PhotoDirName);
+        string ioPath = Path.Combine(ioDir, name);
+        string wwwfilePath = Path.Combine(dataPath, subDir);
+        string url = Path.Combine(appUrl, name);
+        
+        WWW www;
+        if (!File.Exists(ioPath))
+        {
+            Debug.Log("not Exists : " + wwwfilePath);
+            www = new WWW(url);
+            yield return www;
+            if (string.IsNullOrEmpty(www.error))
+            {
+                Texture2D tex = www.texture;
+                //Sprite sp = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), Vector2.zero);
+                getPhoto(name, www.texture);
+                if (!Directory.Exists(ioDir))
+                {
+                    Directory.CreateDirectory(ioDir);
+                }
+                var save = new Thread(() => File.WriteAllBytes(Path.Combine(ioDir, name), www.bytes));
+                save.Start();
+            }
+            else
+            {
+                getPhoto(name, null);
+            }
+        }
+        else
+        {
+            Debug.Log("Exists : " + wwwfilePath);
+            //www = new WWW(wwwfilePath);
+            Texture2D tex = new Texture2D(2,2);
+            tex.LoadImage(File.ReadAllBytes(Path.Combine(ioDir, name)));
+            tex.Apply();
+            getPhoto(name, tex);
+            yield return null;
+        }
+    }
     public delegate void GetPage(Page page);
     public void GetPageByName(string pageName,GetPage getPage)
     {
@@ -166,7 +259,7 @@ public class Manager : Singleton<Manager>
     }
     public void UpdateAppInfo(System.Action callback)
     {
-        Debug.Log("UpdateAppInfo");
+        //Debug.Log("UpdateAppInfo");
         StartCoroutine(DownloadAppInfo(callback));
         //S3Client.GetObjectAsync(AppInfoS3BucketName, AppInfoFileName, (responseObj) =>
         //{
@@ -299,7 +392,7 @@ public class Manager : Singleton<Manager>
     {
         Card card = new Card();
         card.Name = "ไม่มีสลากอะ";
-        card.ViewType = CardType.NameWithoutBG;
+        card.ViewType = CardType.NameOnly;
         cards.Add(card);
     }
     Card BackPageCard
@@ -308,7 +401,7 @@ public class Manager : Singleton<Manager>
         {
             Card card = new Card();
             card.Name = "< กลับ";
-            card.ViewType = CardType.NameWithoutBG;
+            card.ViewType = CardType.NameOnly;
             card.NextPage = "Back";
             return card;
         }

@@ -12,8 +12,9 @@ public class Lotto : RoundPage {
     private int minRandom = -500000;
     [SerializeField]
     private int maxRandom = 500000;
-    void Start()
+    public override void Start()
     {
+        base.Start();
         StartCoroutine(SetScroller());
     }
     IEnumerator SetScroller()

@@ -33,6 +33,10 @@ public class TicketDescPopup : Popup {
         {
             ChoiceText.text = choice.Name;
         }
+        else
+        {
+            ChoiceText.text = ticket.reserveNumber.ToString();
+        }
         if (!string.IsNullOrEmpty(round.Description))
         {
             Description.text = round.Description;

@@ -9,7 +9,7 @@ public enum CardType
     IconWithName = 3,
     IconOnly = 4,
     NameOnly = 5,
-    NameWithoutBG = 6,
+    NameWithBG = 6,
     NameWithLine = 7,
 }//706
 [Serializable]

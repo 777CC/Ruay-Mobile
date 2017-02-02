@@ -14,14 +14,21 @@ public class Home : MonoBehaviour {
     void Start () {
         //string test = JsonUtility.ToJson(this);
         //Debug.Log("test : " + test.Length);
-        string path = Application.streamingAssetsPath + @"\test.txt";
+        //string path = Application.streamingAssetsPath + @"\test.txt";
         //File.WriteAllText(path, test);
-        string ttt =  File.ReadAllText(path);
-        Debug.Log("ttt : " + ttt.Length);
-        JsonUtility.FromJsonOverwrite(ttt, this);
+        //string ttt =  File.ReadAllText(path);
+        //Debug.Log("ttt : " + ttt.Length);
+        //JsonUtility.FromJsonOverwrite(ttt, this);
         //JsonUtility.FromJsonOverwrite(text.text, this);
         //pages = JsonHelper.getJsonArray<Page>(text.text);
         //Debug.Log(JsonUtility.ToJson(this));
+        StartCoroutine(TestWWW());
+    }
+    IEnumerator TestWWW()
+    {
+        WWW www = new WWW("chainchoonoi.com/home.json");
+        yield return www;
+        Debug.Log(www.text);
     }
     public void TestLambda()
     {

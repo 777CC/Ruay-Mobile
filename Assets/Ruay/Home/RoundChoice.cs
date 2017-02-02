@@ -17,6 +17,8 @@ public class RoundChoice : RoundPage
     [SerializeField]
     Text HeadText;
     [SerializeField]
+    Text RatioText;
+    [SerializeField]
     Text Desc;
     [SerializeField]
     Text ConfirmHeader;
@@ -57,13 +59,17 @@ public class RoundChoice : RoundPage
                 }
             }
         }
-        if(!string.IsNullOrEmpty(r.HeadText))
+        if(!string.IsNullOrEmpty(r.Ratio))
         {
-            HeadText.text = r.HeadText;
+            RatioText.text = r.Ratio;
         }
         else
         {
-            HeadText.gameObject.SetActive(false);
+            RatioText.gameObject.SetActive(false);
+        }
+        if (!string.IsNullOrEmpty(r.Name))
+        {
+            HeadText.text = r.Name;
         }
         Desc.text = r.Description;
     }

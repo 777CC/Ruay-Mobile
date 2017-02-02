@@ -5,7 +5,7 @@ public struct Round
     public string id;
     public string Name;
     public string Photo;
-    public string HeadText;
+    public string Ratio;
     public string Description;
     public int Price;
     public string DiscountPercent;

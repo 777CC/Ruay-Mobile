@@ -26,7 +26,6 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
         //card = new SmallList<Card>();
         Manager.Instance.DownloadHomeJson(()=> { });
         NextPage("Home");
-        scroller.Delegate = this;
     }
     void LoadPage(Page nextPage)
     {
@@ -48,6 +47,7 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
         v.page = nextPage;
         v.viewPos = 0;
         viewStack.Add(v);
+        scroller.Delegate = this;
     }
     void NextPage(string pageName)
     {
@@ -132,26 +132,13 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
                 height = 706;
                 break;
             case CardType.PhotoOnly:
-                height = 706;
-                break;
-            case CardType.IconWithName:
-                height = 200;
-                break;
-            case CardType.IconOnly:
-                height = 706;
+                height = 533.2f;
                 break;
             case CardType.NameOnly:
-                height = 706;
-                break;
-            case CardType.NameWithoutBG:
-                height = 200;
-                break;
-            case CardType.NameWithLine:
                 height = 200;
                 break;
             default:
-                height = 706;
-                break;
+                goto case CardType.NameOnly;
         }
         return height;
     }
