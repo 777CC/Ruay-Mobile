@@ -1,24 +1,19 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using EnhancedUI;
 using EnhancedUI.EnhancedScroller;
-using System.Runtime.InteropServices;
-using System.Threading;
 using System.Collections;
 using System.IO;
+using System.Threading;
 
 [RequireComponent(typeof(Button))]
-public class HomeScrollCallView : EnhancedScrollerCellView {
-    const string PhotoDirName = "Photo";
+public class HomeScrollCallView : EnhancedScrollerCellView{
     public Text NameText;
     public GameObject Mask;
     public RawImage Photo;
     public Button button;
     public Image BG;
     public Image Line;
-    public delegate void GetPhoto(string name, Texture tex);
-    Thread loadPhoto;
-    Thread savePhoto;
+    const string PhotoDirName = "Photo";
     public void SetData(Card data)
     {
         NameText.text = data.Name;
@@ -56,21 +51,21 @@ public class HomeScrollCallView : EnhancedScrollerCellView {
     void SetView(bool isBG,string photoName,bool isLine, TextAnchor nameAli)
     {
         BG.enabled = isBG;
-        
         if (!string.IsNullOrEmpty(photoName))
         {
-            StartCoroutine(LoadPhoto(name, SetPhoto));
+            StartCoroutine(LoadPhoto(photoName, SetPhoto));
             Mask.SetActive(true);
         }
         else
         {
-            Mask.SetActive(false);
             Photo.texture = null;
+            Mask.SetActive(false);
         }
         Line.enabled = isLine;
         NameText.alignment = nameAli;
     }
-    string dataDir
+    public delegate void GetPhoto(string name, Texture tex);
+    string dataPath
     {
         get
         {
@@ -78,56 +73,64 @@ public class HomeScrollCallView : EnhancedScrollerCellView {
 #if UNITY_EDITOR
             path = "file:" + Application.persistentDataPath;
 #elif UNITY_ANDROID
-         path = "jar:file://"+ Application.persistentDataPath;
+            //if (Application.persistentDataPath[0] == '/')
+            //{
+            //    path =  "jar:file://"+ Application.persistentDataPath.Substring(1, Application.persistentDataPath.Length - 1);
+            //}
+            //else
+            //{
+                path = @"file://"+  Application.persistentDataPath;
+            //}
 #elif UNITY_IOS
-         path = "file:" + Application.persistentDataPath;
+            path = "file:" + Application.persistentDataPath;
 #else
-         //Desktop (Mac OS or Windows)
-         path = "file:"+ Application.persistentDataPath;
+            //Desktop (Mac OS or Windows)
+            path = "file:"+ Application.persistentDataPath;
 #endif
             return path;
         }
     }
-    IEnumerator LoadPhoto(string name, GetPhoto getPhoto)
+    IEnumerator LoadPhoto(string photoName, GetPhoto getPhoto)
     {
-        string subPath = Path.Combine(PhotoDirName, name);
+        string subDir = Path.Combine(PhotoDirName, photoName);
         string ioDir = Path.Combine(Application.persistentDataPath, PhotoDirName);
-        string ioPath = Path.Combine(ioDir, name);
-        string wwwfilePath = Path.Combine(dataDir, subPath);
-        string url = Path.Combine(Manager.Instance.AppUrl, name);
-
-        WWW www;
+        string ioPath = Path.Combine(ioDir, photoName);
+        string wwwfilePath = dataPath + Path.DirectorySeparatorChar + PhotoDirName + Path.DirectorySeparatorChar + photoName;
+        string url = Path.Combine(Manager.Instance.AppUrl, photoName);
+        
         if (!File.Exists(ioPath))
         {
-            Debug.Log("not Exists : " + wwwfilePath);
-            www = new WWW(url);
+            Debug.Log("load web :" + url);
+            WWW www = new WWW(url);
             yield return www;
             if (string.IsNullOrEmpty(www.error))
             {
-                Texture2D tex = www.texture;
-                //Sprite sp = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), Vector2.zero);
-                getPhoto(name, www.texture);
+                getPhoto(photoName, www.texture);
                 if (!Directory.Exists(ioDir))
                 {
                     Directory.CreateDirectory(ioDir);
                 }
-                var save = new Thread(() => File.WriteAllBytes(Path.Combine(ioDir, name), www.bytes));
+                Debug.Log(photoName + " " + www.texture.width + "   ");
+                byte[] data = www.bytes;
+                var save = new Thread(() => File.WriteAllBytes(Path.Combine(ioDir, photoName), data));
                 save.Start();
             }
             else
             {
-                getPhoto(name, null);
+                Debug.Log(www.error);
             }
         }
         else
         {
-            Debug.Log("Exists : " + wwwfilePath);
-            //www = new WWW(wwwfilePath);
-            Texture2D tex = new Texture2D(2, 2);
-            tex.LoadImage(File.ReadAllBytes(Path.Combine(ioDir, name)));
-            tex.Apply();
-            getPhoto(name, tex);
-            yield return null;
+            Debug.Log("load file :" + wwwfilePath);
+            WWW www = new WWW(wwwfilePath);
+            yield return www;
+            getPhoto(photoName, www.texture);
         }
+    }
+    public void ClearImage()
+    {
+        StopAllCoroutines();
+        Photo.texture = null;
     }
 }

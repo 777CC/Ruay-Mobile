@@ -21,12 +21,15 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
     //private SmallList<Card> card;
     void Awake()
     {
+        Screen.fullScreen = false;
+
         scroller = GetComponent<EnhancedScroller>();
         // create a new data list for the slots
         //card = new SmallList<Card>();
         Manager.Instance.DownloadHomeJson(()=> { });
         NextPage("Home");
     }
+
     void LoadPage(Page nextPage)
     {
         if (nextPage != null)
@@ -48,6 +51,7 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
         v.viewPos = 0;
         viewStack.Add(v);
         scroller.Delegate = this;
+        scroller.cellViewVisibilityChanged = CellViewVisibilityChanged;
     }
     void NextPage(string pageName)
     {
@@ -145,11 +149,26 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
     public EnhancedScrollerCellView GetCellView(EnhancedScroller scroller, int dataIndex, int cellIndex)
     {
         HomeScrollCallView cellView = scroller.GetCellView(CellViewPrefab) as HomeScrollCallView;
-        cellView.SetData(currentPage.Cards[dataIndex]);
-        cellView.button.onClick.RemoveAllListeners();
-        cellView.button.onClick.AddListener(() => {
-            Debug.Log("Nextpage : " + currentPage.Cards[dataIndex].NextPage);
-            NextPage(currentPage.Cards[dataIndex].NextPage); });
+            //cellView.SetData(currentPage.Cards[dataIndex]);
+            cellView.button.onClick.RemoveAllListeners();
+            cellView.button.onClick.AddListener(() => {
+                Debug.Log("Nextpage : " + currentPage.Cards[dataIndex].NextPage);
+                NextPage(currentPage.Cards[dataIndex].NextPage);
+            });
         return cellView;
+    }
+    private void CellViewVisibilityChanged(EnhancedScrollerCellView cellView)
+    {
+        // cast the cell view to our custom view
+        HomeScrollCallView view = cellView as HomeScrollCallView;
+
+        // if the cell is active, we set its data, 
+        // otherwise we will clear the image back to 
+        // its default state
+
+        if (cellView.active)
+            view.SetData(currentPage.Cards[cellView.dataIndex]);
+        else
+            view.ClearImage();
     }
 }

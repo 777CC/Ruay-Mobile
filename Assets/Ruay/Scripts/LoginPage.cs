@@ -17,7 +17,9 @@ public class LoginPage : MonoBehaviour {
     private RectTransform checkerImage;
     public void Start()
     {
+        //For android status bar and navigation bar
         Screen.fullScreen = false;
+
         loading.gameObject.SetActive(true);
         LeanTween.alphaCanvas(loading, 1,0.3f).setDelay(0.3f);
         ConnectFacebook();

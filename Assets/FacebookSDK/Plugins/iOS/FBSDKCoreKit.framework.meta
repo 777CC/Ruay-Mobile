@@ -1,13 +1,14 @@
 fileFormatVersion: 2
 guid: 1b3c749f1de39c8469d634baf25908f5
 folderAsset: yes
-timeCreated: 1478827230
-licenseType: Pro
+timeCreated: 1486140225
+licenseType: Free
 PluginImporter:
   serializedVersion: 1
   iconMap: {}
   executionOrder: {}
   isPreloaded: 0
+  isOverridable: 0
   platformData:
     Any:
       enabled: 1

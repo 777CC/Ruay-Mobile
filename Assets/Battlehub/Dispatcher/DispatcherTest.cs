@@ -26,6 +26,7 @@ namespace Battlehub.Dispatcher
             Thread.Sleep(wait);
             Dispatcher.Current.BeginInvoke(() =>
             {
+                Debug.Log("test");
                 Output.text += param;
                 Output.text += Environment.NewLine;
             });
