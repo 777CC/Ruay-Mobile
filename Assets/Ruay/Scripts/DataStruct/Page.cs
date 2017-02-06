@@ -8,9 +8,12 @@ public enum CardType
     PhotoOnly = 2,
     IconWithName = 3,
     IconOnly = 4,
-    NameOnly = 5,
-    NameWithBG = 6,
-    NameWithLine = 7,
+    NameOnlyLeft = 5,
+    NameOnlyCenter = 6,
+    NameOnlyRight = 7,
+    NameWithBG = 8,
+    NameWithLine = 9,
+    Header = 10,
 }//706
 [Serializable]
 public class Page{
@@ -24,6 +27,4 @@ public struct Card
     public string NextPage;
     public CardType ViewType;
     public string Photo;
-    public string PhotoBlur;
-    public string Description;
 }

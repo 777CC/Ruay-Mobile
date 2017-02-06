@@ -17,14 +17,25 @@ public class RoundChoice : RoundPage
     [SerializeField]
     Text HeadText;
     [SerializeField]
+    RawImage Photo;
+    [SerializeField]
     Text RatioText;
     [SerializeField]
     Text Desc;
     [SerializeField]
     Text ConfirmHeader;
-    public override void SetRound(Round r)
+    public override void SetItem(Item r,bool isItem,Texture tex)
     {
-        base.SetRound(r);
+        base.SetItem(r, isItem,tex);
+        if(tex)
+        {
+            Photo.gameObject.SetActive(true);
+            Photo.texture = tex;
+        }
+        else
+        {
+            Photo.gameObject.SetActive(false);
+        }
         if (r.Choices != null)
         {
             if (r.Choices.Length == 2)
@@ -81,6 +92,13 @@ public class RoundChoice : RoundPage
     }
     public void Buy()
     {
-        Manager.Instance.BuyRound(round.id, currentChoice.Value.ToString(), amount);
+        if (isItem)
+        {
+            Manager.Instance.BuyItem(round.id, currentChoice.Value.ToString(), amount);
+        }
+        else
+        {
+            Manager.Instance.BuyRound(round.id, currentChoice.Value.ToString(), amount);
+        }
     }
 }

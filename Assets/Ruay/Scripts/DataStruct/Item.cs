@@ -1,6 +1,6 @@
 ﻿using System;
 [Serializable]
-public struct Round
+public struct Item
 {
     public string id;
     public string Name;

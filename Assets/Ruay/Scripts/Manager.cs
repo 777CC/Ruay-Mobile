@@ -54,7 +54,7 @@ public class Manager : Singleton<Manager>
     [SerializeField]
     private Ticket[] tickets;
     [SerializeField]
-    private Reward[] Rewards;
+    private Reward[] rewards;
     public string[] Event;
     #endregion
     
@@ -88,7 +88,8 @@ public class Manager : Singleton<Manager>
     [SerializeField]
     private double updateTimeCount = 180000;
     const string HomePageName = "Home";
-    const string MyTicketName = "MyTickets";
+    const string MyTicketsName = "MyTickets";
+    const string MyRewardsName = "MyRewards";
     private const float imageW = 1032f;
     private const float screenW = 1080f;
     private const float screenHRatio = 2.048f;
@@ -118,7 +119,9 @@ public class Manager : Singleton<Manager>
     [SerializeField]
     private List<Page> pages;
     [SerializeField]
-    private Round[] rounds;
+    private Item[] rounds;
+    [SerializeField]
+    private Item[] items;
     public delegate void GetPage(Page page);
     public void GetPageByName(string pageName,GetPage getPage)
     {
@@ -139,9 +142,10 @@ public class Manager : Singleton<Manager>
         yield return new WaitUntil(()=> pages != null);
         getPage(pages.Find(page => page.Name == pageName));
     }
-    public delegate void GetRound(Round round);
-    public delegate void GetTicket(Ticket item,Round round);
-    public void GetRoundById(string roundId, GetRound getRound)
+    public delegate void GetItem(Item item);
+    public delegate void GetTicket(Ticket ticket,Item round);
+    public delegate void GetReward(Reward reward, Item item);
+    public void GetRoundById(string roundId, GetItem getRound)
     {
         if (pages != null)
         {
@@ -152,24 +156,52 @@ public class Manager : Singleton<Manager>
         }
         else
         {
-            StartCoroutine(WaitForDonwloadHomeJson(roundId, getRound));
+            StartCoroutine(WaitForDonwloadRounds(roundId, getRound));
         }
     }
-    public void GetTicketById(int ticketIndex, GetTicket getTicket)
+    IEnumerator WaitForDonwloadRounds(string roundId, GetItem getItem)
     {
-        Debug.Log("GetTicketById :" + ticketIndex);
+        yield return new WaitUntil(() => pages != null);
+        getItem(Array.Find(rounds, p => p.id == roundId));
+    }
+    public void GetTicketByIndex(int index, GetTicket getTicket)
+    {
         if (tickets != null)
         {
-            if (getTicket != null && ticketIndex < tickets.Length)
+            if (getTicket != null && index < tickets.Length)
             {
-                getTicket(tickets[ticketIndex], Array.Find(rounds, r => r.id == tickets[ticketIndex].roundId));
+                getTicket(tickets[index], Array.Find(rounds, r => r.id == tickets[index].roundId));
             }
         }
     }
-    IEnumerator WaitForDonwloadHomeJson(string roundId, GetRound getRound)
+    public void GetRewardByIndex(int Index, GetReward getReward)
+    {
+        if (rewards != null)
+        {
+            if (getReward != null && Index < rewards.Length)
+            {
+                getReward(rewards[Index], Array.Find(items, r => r.id == rewards[Index].itemId));
+            }
+        }
+    }
+    public void GetItemById(string id, GetItem getItem)
+    {
+        if (items != null)
+        {
+            if (getItem != null)
+            {
+                getItem(Array.Find(items, p => p.id == id));
+            }
+        }
+        else
+        {
+            StartCoroutine(WaitForDonwloadItems(id, getItem));
+        }
+    }
+    IEnumerator WaitForDonwloadItems(string id, GetItem getItem)
     {
         yield return new WaitUntil(() => pages != null);
-        getRound(Array.Find(rounds, p => p.id == roundId));
+        getItem(Array.Find(items, p => p.id == id));
     }
     #endregion
     public void Save()
@@ -274,7 +306,8 @@ public class Manager : Singleton<Manager>
         Debug.Log(www.text);
         JsonUtility.FromJsonOverwrite(www.text, Instance);
         SetPages();
-        SetTicketPage();
+        SetMyTicketsPage();
+        SetMyRewardsPage();
         if (callback != null)
         {
             callback();
@@ -284,22 +317,23 @@ public class Manager : Singleton<Manager>
     {
         pages.ForEach((page) =>
         {
-            if (page.Name != HomePageName && page.Name != MyTicketName)
+            if (page.Name != HomePageName && page.Name != MyTicketsName)
             {
-                page.Cards.Insert(0, BackPageCard);
+                page.Cards.Insert(0, BackPageCard(page.Name));
             }
         });
     }
-    void SetTicketPage()
+    void SetMyTicketsPage()
     {
-        Page page = pages.Find(p => p.Name == MyTicketName);
+        Page page = pages.Find(p => p.Name == MyTicketsName);
         if(page == null)
         {
             page = new Page();
+            page.Name = MyTicketsName;
             page.Cards = new List<Card>();
         }
         page.Cards.Clear();
-        page.Cards.Add(BackPageCard);
+        page.Cards.Add(BackPageCard("สลากของคุณ"));
         if (tickets != null)
         {
             if (tickets.Length > 0)
@@ -307,12 +341,11 @@ public class Manager : Singleton<Manager>
                 for (int i = 0; i < tickets.Length; i++)
                 {
                     Card card = new Card();
-                    Round round = Array.Find(rounds, r => r.id == tickets[i].roundId);
+                    Item round = Array.Find(rounds, r => r.id == tickets[i].roundId);
                     card.Name = round.Name;
                     card.NextPage = "Ticket" + i;
                     card.ViewType = CardType.NameWithLine;
                     page.Cards.Add(card);
-                    Debug.Log(JsonUtility.ToJson(card));
                 }
             }
             else
@@ -324,7 +357,7 @@ public class Manager : Singleton<Manager>
         {
             SetEmptyTicket(page.Cards);
         }
-        page.Name = MyTicketName;
+        page.Name = MyTicketsName;
         if (!pages.Contains(page))
         {
             pages.Add(page);
@@ -333,20 +366,64 @@ public class Manager : Singleton<Manager>
     void SetEmptyTicket(List<Card> cards)
     {
         Card card = new Card();
-        card.Name = "ไม่มีสลากอะ";
-        card.ViewType = CardType.NameOnly;
+        card.Name = "ไม่มีอะ ลองแลกสลากดูซิ";
+        card.ViewType = CardType.NameOnlyRight;
         cards.Add(card);
     }
-    Card BackPageCard
+    void SetMyRewardsPage()
     {
-        get
+        Page page = pages.Find(p => p.Name == MyRewardsName);
+        if (page == null)
         {
+            page = new Page();
+            page.Name = MyRewardsName;
+            page.Cards = new List<Card>();
+        }
+        page.Cards.Clear();
+        page.Cards.Add(BackPageCard("ของขวัญ"));
+        if (rewards != null)
+        {
+            if (rewards.Length > 0)
+            {
+                for (int i = 0; i < rewards.Length; i++)
+                {
+                    Card card = new Card();
+                    Item round = Array.Find(items, r => r.id == rewards[i].itemId);
+                    card.Name = round.Name;
+                    card.NextPage = "Reward" + i;
+                    card.ViewType = CardType.NameWithLine;
+                    page.Cards.Add(card);
+                }
+            }
+            else
+            {
+                SetEmptyReward(page.Cards);
+            }
+        }
+        else
+        {
+            SetEmptyReward(page.Cards);
+        }
+        page.Name = MyRewardsName;
+        if (!pages.Contains(page))
+        {
+            pages.Add(page);
+        }
+    }
+    void SetEmptyReward(List<Card> cards)
+    {
+        Card card = new Card();
+        card.Name = "ไม่มีอะ ลองแลกของขวัญดูน่ะ";
+        card.ViewType = CardType.NameOnlyRight;
+        cards.Add(card);
+    }
+    Card BackPageCard(string pageName)
+    {
             Card card = new Card();
-            card.Name = "< กลับ";
-            card.ViewType = CardType.NameOnly;
+            card.Name = pageName;
+            card.ViewType = CardType.Header;
             card.NextPage = "Back";
             return card;
-        }
     }
     public OnSyncCallback OnError;
     public void Error(string e)
@@ -452,7 +529,8 @@ public class Manager : Singleton<Manager>
         else
         {
             Debug.Log("No UpdateUserInfo : " + time + " : " + updateTime + updateTimeCount);
-            OnSyncSuccess(string.Empty);
+            //OnSyncSuccess(string.Empty);
+            HandleSyncSuccess(null,null);
         }
         Save();
     }
@@ -464,7 +542,6 @@ public class Manager : Singleton<Manager>
     }
     private void HandleSyncSuccess(object sender, SyncSuccessEventArgs e)
     {
-        Debug.Log("HandleSyncSuccess :" + e.UpdatedRecords);
         double time;
         if (double.TryParse(UserInfo.Get("updateTime"), out time))
         {
@@ -485,7 +562,9 @@ public class Manager : Singleton<Manager>
         }
         interests = UserInfo.Get("interests");
         tickets = JsonHelper.getJsonArray<Ticket>(UserInfo.Get("tickets"));
-        SetTicketPage();
+        rewards = JsonHelper.getJsonArray<Reward>(UserInfo.Get("rewards"));
+        SetMyTicketsPage();
+        SetMyRewardsPage();
         Save();
         if (OnSyncSuccess != null)
         {
@@ -546,9 +625,13 @@ public class Manager : Singleton<Manager>
     #endregion
 
     #region App Service
-    public void BuyRound(string round,string number,int amount)
+    public void BuyRound(string id,string number,int amount)
     {
-        Debug.Log("Buy :" + round + " : " + number + " : "+ amount);
+        Debug.Log("Buy round :" + id + " : " + number + " : "+ amount);
+    }
+    public void BuyItem(string id, string number, int amount)
+    {
+        Debug.Log("Buy item :" + id + " : " + number + " : " + amount);
     }
     #endregion
 }

@@ -27,9 +27,17 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
         // create a new data list for the slots
         //card = new SmallList<Card>();
         Manager.Instance.DownloadHomeJson(()=> { });
-        NextPage("Home");
+        NextPage("Home",null);
     }
-
+#if UNITY_ANDROID
+    public virtual void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            BackPage();
+        }
+    }
+#endif
     void LoadPage(Page nextPage)
     {
         if (nextPage != null)
@@ -53,14 +61,21 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
         scroller.Delegate = this;
         scroller.cellViewVisibilityChanged = CellViewVisibilityChanged;
     }
-    void NextPage(string pageName)
+    void NextPage(string pageName, Texture tex)
     {
         string round = string.Empty;
+        string ticket = string.Empty;
         string item = string.Empty;
+        string reward = string.Empty;
         if (pageName.Length >= 6)
         {
             round = pageName.Substring(0, 6);
-            item = pageName.Substring(0, 6);
+            ticket = pageName.Substring(0, 6);
+            reward = pageName.Substring(0, 6);
+        }
+        if (pageName.Length >= 4)
+        {
+            item = pageName.Substring(0, 4);
         }
         if (pageName == "Back")
         {
@@ -69,24 +84,32 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
         else if (round == "RoundA")
         {
             string id = pageName.Substring(5, pageName.Length - 5);
-            Manager.Instance.GetRoundById(id, (r) => { ShowRound("LottoPopup", r); });
+            Manager.Instance.GetRoundById(id, (r) => { ShowItem("LottoPopup", r, false,tex); });
         }
         else if (round == "RoundB")
         {
             string id = pageName.Substring(5, pageName.Length - 5);
-            Manager.Instance.GetRoundById(id, (r) => { ShowRound("RoundChoicePopup", r); });
+            Manager.Instance.GetRoundById(id, (r) => { ShowItem("RoundChoicePopup", r, false, tex); });
         }
-        else if (round == "RoundC")
-        {
-            string id = pageName.Substring(5, pageName.Length - 5);
-            Manager.Instance.GetRoundById(id, (r) => { ShowRound("RoundChoicePopup", r); });
-        }
-        else if (item == "Ticket")
+        else if (ticket == "Ticket")
         {
             int index;
             if (int.TryParse(pageName.Substring(6, pageName.Length - 6), out index))
             {
-                Manager.Instance.GetTicketById(index, (it,r) => { ShowTicketDesc("TicketDescPopup", it,r); });
+                Manager.Instance.GetTicketByIndex(index, (it, r) => { ShowTicketDesc("ItemDescPopup", it, r, tex); });
+            }
+        }
+        else if (item == "Item")
+        {
+            string id = pageName.Substring(4, pageName.Length - 4);
+            Manager.Instance.GetItemById(id, (i) => { ShowItem("RoundChoicePopup", i,true, tex); });
+        }
+        else if (reward == "Reward")
+        {
+            int index;
+            if (int.TryParse(pageName.Substring(6, pageName.Length - 6), out index))
+            {
+                Manager.Instance.GetRewardByIndex(index, (it, r) => { ShowRewardDesc("ItemDescPopup", it, r,tex); });
             }
         }
         else if (!string.IsNullOrEmpty(pageName))
@@ -95,23 +118,30 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
             ChangePageEffect();
         }
     }
-    void ShowRound(string prefabName,Round r)
+    void ShowItem(string prefabName,Item r,bool isItem,Texture tex)
     {
         RoundPage round = Instantiate(Resources.Load<GameObject>(prefabName)).GetComponent<RoundPage>();
         round.transform.SetParent(FindObjectOfType<Canvas>().transform, false);
         round.transform.SetSiblingIndex(homeCanvasGroup.transform.GetSiblingIndex() + 1);
-        round.SetRound(r);
+        round.SetItem(r, isItem,tex);
     }
-    void ShowTicketDesc(string prefabName, Ticket ticket,Round round)
+    void ShowTicketDesc(string prefabName, Ticket ticket,Item round, Texture tex)
     {
-        TicketDescPopup popup = Instantiate(Resources.Load<GameObject>(prefabName)).GetComponent<TicketDescPopup>();
+        ItemDescPopup popup = Instantiate(Resources.Load<GameObject>(prefabName)).GetComponent<ItemDescPopup>();
         popup.transform.SetParent(FindObjectOfType<Canvas>().transform, false);
         popup.transform.SetSiblingIndex(homeCanvasGroup.transform.GetSiblingIndex() + 1);
-        popup.SetTicket(round ,ticket);
+        popup.SetTicket(round ,ticket, tex);
+    }
+    void ShowRewardDesc(string prefabName, Reward reward, Item item,Texture tex)
+    {
+        ItemDescPopup popup = Instantiate(Resources.Load<GameObject>(prefabName)).GetComponent<ItemDescPopup>();
+        popup.transform.SetParent(FindObjectOfType<Canvas>().transform, false);
+        popup.transform.SetSiblingIndex(homeCanvasGroup.transform.GetSiblingIndex() + 1);
+        popup.SetReward(item, reward, tex);
     }
     void BackPage()
     {
-        if (viewStack.Count > 0)
+        if (viewStack.Count > 0 && !LeanTween.isTweening(gameObject))
         {
             viewStack.RemoveEnd();
             LoadPage(viewStack.Last().page);
@@ -138,22 +168,20 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
             case CardType.PhotoOnly:
                 height = 533.2f;
                 break;
-            case CardType.NameOnly:
+            case CardType.NameOnlyLeft:
                 height = 200;
                 break;
             default:
-                goto case CardType.NameOnly;
+                goto case CardType.NameOnlyLeft;
         }
         return height;
     }
     public EnhancedScrollerCellView GetCellView(EnhancedScroller scroller, int dataIndex, int cellIndex)
     {
         HomeScrollCallView cellView = scroller.GetCellView(CellViewPrefab) as HomeScrollCallView;
-            //cellView.SetData(currentPage.Cards[dataIndex]);
-            cellView.button.onClick.RemoveAllListeners();
-            cellView.button.onClick.AddListener(() => {
-                Debug.Log("Nextpage : " + currentPage.Cards[dataIndex].NextPage);
-                NextPage(currentPage.Cards[dataIndex].NextPage);
+            cellView.OnClick.RemoveAllListeners();
+            cellView.OnClick.AddListener(() => {
+                NextPage(currentPage.Cards[dataIndex].NextPage, cellView.Photo);
             });
         return cellView;
     }

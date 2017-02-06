@@ -5,7 +5,7 @@ using UnityEngine.UI;
 public class Popup : MonoBehaviour {
     [SerializeField]
     protected CanvasGroup canvasGroup;
-    protected Round round;
+    protected Item round;
     protected int amount = 1;
     [SerializeField]
     protected Text amountText;
@@ -19,6 +19,15 @@ public class Popup : MonoBehaviour {
             drag.OnBack = Back;
         }
     }
+#if UNITY_ANDROID
+    public virtual void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            Back();
+        }
+    }
+#endif
     public virtual void Show()
     {
         LeanTween.alphaCanvas(canvasGroup, 1, 0.3f);
@@ -27,9 +36,12 @@ public class Popup : MonoBehaviour {
     }
     public virtual void Back()
     {
-        LeanTween.alphaCanvas(canvasGroup, 0, 0.3f).setOnComplete(() =>
+        if (!LeanTween.isTweening(canvasGroup.gameObject))
         {
-            Destroy(gameObject);
-        });
+            LeanTween.alphaCanvas(canvasGroup, 0, 0.3f).setOnComplete(() =>
+            {
+                Destroy(gameObject);
+            });
+        }
     }
 }

@@ -9,10 +9,12 @@ public class RoundPage : Popup {
     private GameObject errorText;
     [SerializeField]
     private CanvasGroup confirmationCanvasGroup;
-    public virtual void SetRound(Round r)
+    protected bool isItem = true;
+    public virtual void SetItem(Item r,bool isItem,Texture tex)
     {
         Debug.Log("SetRound");
         round = r;
+        this.isItem = isItem;
         Show();
         SetPrice();
     }

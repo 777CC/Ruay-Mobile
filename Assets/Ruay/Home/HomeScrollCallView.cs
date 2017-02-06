@@ -7,12 +7,34 @@ using System.Threading;
 
 [RequireComponent(typeof(Button))]
 public class HomeScrollCallView : EnhancedScrollerCellView{
-    public Text NameText;
-    public GameObject Mask;
-    public RawImage Photo;
-    public Button button;
-    public Image BG;
-    public Image Line;
+    [SerializeField]
+    private Text HeadText;
+    [SerializeField]
+    private Text NameText;
+    [SerializeField]
+    private GameObject Mask;
+    [SerializeField]
+    private RawImage photo;
+    public Texture Photo
+    {
+        get
+        {
+            return photo.texture;
+        }
+    }
+    [SerializeField]
+    private Button button;
+   public  Button.ButtonClickedEvent OnClick
+    {
+        get
+        {
+            return button.onClick;
+        }
+    }
+    [SerializeField]
+    private Image BG;
+    [SerializeField]
+    private Image Line;
     const string PhotoDirName = "Photo";
     public void SetData(Card data)
     {
@@ -31,8 +53,14 @@ public class HomeScrollCallView : EnhancedScrollerCellView{
             case CardType.IconOnly:
                 SetView(true, data.Photo, false, TextAnchor.MiddleLeft);
                 break;
-            case CardType.NameOnly:
+            case CardType.NameOnlyLeft:
                 SetView(false, data.Photo, false, TextAnchor.MiddleLeft);
+                break;
+            case CardType.NameOnlyCenter:
+                SetView(false, data.Photo, false, TextAnchor.MiddleCenter);
+                break;
+            case CardType.NameOnlyRight:
+                SetView(false, data.Photo, false, TextAnchor.MiddleRight);
                 break;
             case CardType.NameWithBG:
                 SetView(true, data.Photo, false, TextAnchor.MiddleLeft);
@@ -40,13 +68,18 @@ public class HomeScrollCallView : EnhancedScrollerCellView{
             case CardType.NameWithLine:
                 SetView(false, data.Photo, true, TextAnchor.MiddleLeft);
                 break;
+            case CardType.Header:
+                SetView(false, data.Photo, false, TextAnchor.MiddleLeft);
+                HeadText.text = data.Name;
+                NameText.text = "<";
+                break;
             default:
                 break;
         }
     }
     void SetPhoto(string name,Texture tex)
     {
-        Photo.texture = tex;
+        photo.texture = tex;
     }
     void SetView(bool isBG,string photoName,bool isLine, TextAnchor nameAli)
     {
@@ -58,7 +91,7 @@ public class HomeScrollCallView : EnhancedScrollerCellView{
         }
         else
         {
-            Photo.texture = null;
+            photo.texture = null;
             Mask.SetActive(false);
         }
         Line.enabled = isLine;
@@ -73,14 +106,7 @@ public class HomeScrollCallView : EnhancedScrollerCellView{
 #if UNITY_EDITOR
             path = "file:" + Application.persistentDataPath;
 #elif UNITY_ANDROID
-            //if (Application.persistentDataPath[0] == '/')
-            //{
-            //    path =  "jar:file://"+ Application.persistentDataPath.Substring(1, Application.persistentDataPath.Length - 1);
-            //}
-            //else
-            //{
-                path = @"file://"+  Application.persistentDataPath;
-            //}
+            path = @"file://"+  Application.persistentDataPath;
 #elif UNITY_IOS
             path = "file:" + Application.persistentDataPath;
 #else
@@ -131,6 +157,8 @@ public class HomeScrollCallView : EnhancedScrollerCellView{
     public void ClearImage()
     {
         StopAllCoroutines();
-        Photo.texture = null;
+        photo.texture = null;
+        HeadText.text = string.Empty;
+        NameText.text = string.Empty;
     }
 }
