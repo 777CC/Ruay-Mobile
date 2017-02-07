@@ -98,7 +98,7 @@ public class RoundChoice : RoundPage
         }
         else
         {
-            Manager.Instance.BuyRound(round.id, currentChoice.Value.ToString(), amount);
+            Manager.Instance.BuyRound(round.id, currentChoice.Value, amount);
         }
     }
 }

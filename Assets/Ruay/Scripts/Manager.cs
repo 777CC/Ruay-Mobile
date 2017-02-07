@@ -548,6 +548,11 @@ public class Manager : Singleton<Manager>
         {
             updateTime = time;
         }
+        int s;
+        if (int.TryParse(UserInfo.Get("satang"), out s))
+        {
+            satang = s;
+        }
         firstName = UserInfo.Get("firstName");
         lastName = UserInfo.Get("lastName");
         gender = UserInfo.Get("gender");
@@ -626,24 +631,28 @@ public class Manager : Singleton<Manager>
     #endregion
 
     #region App Service
-    public void BuyRound(string id,string number,int amount)
+    public void BuyRound(string id,int number,int amount)
     {
-        Debug.Log("Buy round :" + id + " : " + number + " : "+ amount);
+        LambdaBuyTicket ticket = new LambdaBuyTicket();
+        ticket.roundId = id;
+        ticket.number = number;
+        ticket.amount = amount;
         LambdaClient.InvokeAsync(new Amazon.Lambda.Model.InvokeRequest()
         {
             FunctionName = "BuyTicket",
-            Payload = EventText.text
+            Payload = JsonUtility.ToJson(ticket)
         },
         (responseObject) =>
         {
-            ResultText.text += "\n";
             if (responseObject.Exception == null)
             {
-                ResultText.text += Encoding.ASCII.GetString(responseObject.Response.Payload.ToArray()) + "\n";
+                Debug.Log(JsonUtility.ToJson(responseObject.Response));
+                Debug.Log( Encoding.ASCII.GetString(responseObject.Response.Payload.ToArray()));
             }
             else
             {
-                ResultText.text += responseObject.Exception + "\n";
+                Debug.Log(responseObject.Exception);
+                Debug.Log(JsonUtility.ToJson( responseObject.Response));
             }
         }
         );

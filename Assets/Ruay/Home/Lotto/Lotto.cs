@@ -40,7 +40,11 @@ public class Lotto : RoundPage {
     }
     public void Buy()
     {
-        Manager.Instance.BuyRound(round.id, number, amount);
+        int n;
+        if (int.TryParse(number,out n))
+        {
+            Manager.Instance.BuyRound(round.id, n, amount);
+        }
     }
     public void RandomFirst()
     {
