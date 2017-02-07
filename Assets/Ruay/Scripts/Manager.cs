@@ -13,6 +13,7 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading;
+using Amazon.Lambda;
 
 public class Manager : Singleton<Manager>
 //public class Manager:MonoBehaviour
@@ -470,18 +471,18 @@ public class Manager : Singleton<Manager>
             return credentials;
         }
     }
-    //private IAmazonLambda lambdaClient;
-    //public IAmazonLambda LambdaClient
-    //{
-    //    get
-    //    {
-    //        if (lambdaClient == null)
-    //        {
-    //            SetAWS();
-    //        }
-    //        return lambdaClient;
-    //    }
-    //}
+    private IAmazonLambda lambdaClient;
+    public IAmazonLambda LambdaClient
+    {
+        get
+        {
+            if (lambdaClient == null)
+            {
+                SetAWS();
+            }
+            return lambdaClient;
+        }
+    }
     //private IAmazonS3 s3Client;
     //public IAmazonS3 S3Client
     //{
@@ -611,7 +612,7 @@ public class Manager : Singleton<Manager>
         userInfo.OnSyncSuccess += HandleSyncSuccess;
         userInfo.OnSyncFailure += HandleSyncFailure;
         UserInfo.OnSyncConflict = HandleSyncConflict;
-        //lambdaClient = new AmazonLambdaClient(credentials, region);
+        lambdaClient = new AmazonLambdaClient(credentials, region);
         //s3Client = new AmazonS3Client(credentials, region);
     }
     private double GetUnixTime()
@@ -628,6 +629,24 @@ public class Manager : Singleton<Manager>
     public void BuyRound(string id,string number,int amount)
     {
         Debug.Log("Buy round :" + id + " : " + number + " : "+ amount);
+        LambdaClient.InvokeAsync(new Amazon.Lambda.Model.InvokeRequest()
+        {
+            FunctionName = "BuyTicket",
+            Payload = EventText.text
+        },
+        (responseObject) =>
+        {
+            ResultText.text += "\n";
+            if (responseObject.Exception == null)
+            {
+                ResultText.text += Encoding.ASCII.GetString(responseObject.Response.Payload.ToArray()) + "\n";
+            }
+            else
+            {
+                ResultText.text += responseObject.Exception + "\n";
+            }
+        }
+        );
     }
     public void BuyItem(string id, string number, int amount)
     {

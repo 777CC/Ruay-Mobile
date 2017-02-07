@@ -171,6 +171,9 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
             case CardType.NameOnlyLeft:
                 height = 200;
                 break;
+            case CardType.Header:
+                height = 220;
+                break;
             default:
                 goto case CardType.NameOnlyLeft;
         }

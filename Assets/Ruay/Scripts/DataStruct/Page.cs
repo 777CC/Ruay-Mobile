@@ -17,6 +17,7 @@ public enum CardType
 }//706
 [Serializable]
 public class Page{
+    public string Id;
     public string Name;
     public List<Card> Cards;
 }
