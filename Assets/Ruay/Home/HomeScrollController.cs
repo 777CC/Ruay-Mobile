@@ -42,7 +42,7 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
     {
         if (nextPage != null)
         {
-            Debug.Log("Load page : " + nextPage.Name);
+            Debug.Log("Load page : " + nextPage.name);
             currentPage = nextPage;
             scroller.ReloadData();
         }
@@ -157,10 +157,10 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
             homeCanvasGroup.interactable = true;
         });
     }
-    public int GetNumberOfCells(EnhancedScroller scroller) { return currentPage.Cards.Count; }
+    public int GetNumberOfCells(EnhancedScroller scroller) { return currentPage.cards.Count; }
     public float GetCellViewSize(EnhancedScroller scroller, int dataIndex) {
         float height;
-        switch (currentPage.Cards[dataIndex].ViewType)
+        switch (currentPage.cards[dataIndex].viewType)
         {
             case CardType.PhotoWithName:
                 height = 706;
@@ -184,7 +184,7 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
         HomeScrollCallView cellView = scroller.GetCellView(CellViewPrefab) as HomeScrollCallView;
             cellView.OnClick.RemoveAllListeners();
             cellView.OnClick.AddListener(() => {
-                NextPage(currentPage.Cards[dataIndex].NextPage, cellView.Photo);
+                NextPage(currentPage.cards[dataIndex].nextPage, cellView.Photo);
             });
         return cellView;
     }
@@ -198,7 +198,7 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
         // its default state
 
         if (cellView.active)
-            view.SetData(currentPage.Cards[cellView.dataIndex]);
+            view.SetData(currentPage.cards[cellView.dataIndex]);
         else
             view.ClearImage();
     }

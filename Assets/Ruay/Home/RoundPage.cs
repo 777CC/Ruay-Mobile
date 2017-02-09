@@ -31,12 +31,12 @@ public class RoundPage : Popup {
     }
     protected void SetPrice()
     {
-        priceText.text = round.Price * amount + "/" + Manager.Instance.satang + " สตางค์";
+        priceText.text = round.price * amount + "/" + Manager.Instance.satang + " สตางค์";
     }
     public void Confirmation()
     {
         int satang = Manager.Instance.satang;
-        int pay = amount * round.Price;
+        int pay = amount * round.price;
         int balance = satang - pay;
         if (balance >= 0)
         {

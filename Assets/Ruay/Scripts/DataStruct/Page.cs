@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine;
 [Serializable]
 public enum CardType
 {
@@ -17,15 +16,15 @@ public enum CardType
 }//706
 [Serializable]
 public class Page{
-    public string Id;
-    public string Name;
-    public List<Card> Cards;
+    public string id;
+    public string name;
+    public List<Card> cards;
 }
 [Serializable]
 public struct Card
 {
-    public string Name;
-    public string NextPage;
-    public CardType ViewType;
-    public string Photo;
+    public string name;
+    public string nextPage;
+    public CardType viewType;
+    public string photo;
 }

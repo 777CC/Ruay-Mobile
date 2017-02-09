@@ -38,39 +38,39 @@ public class HomeScrollCallView : EnhancedScrollerCellView{
     const string PhotoDirName = "Photo";
     public void SetData(Card data)
     {
-        NameText.text = data.Name;
-        switch (data.ViewType)
+        NameText.text = data.name;
+        switch (data.viewType)
         {
             case CardType.PhotoWithName:
-                SetView(true, data.Photo, false, TextAnchor.MiddleLeft);
+                SetView(true, data.photo, false, TextAnchor.MiddleLeft);
                 break;
             case CardType.PhotoOnly:
-                SetView(true, data.Photo, false, TextAnchor.MiddleLeft);
+                SetView(true, data.photo, false, TextAnchor.MiddleLeft);
                 break;
             case CardType.IconWithName:
-                SetView(true, data.Photo, false, TextAnchor.MiddleLeft);
+                SetView(true, data.photo, false, TextAnchor.MiddleLeft);
                 break;
             case CardType.IconOnly:
-                SetView(true, data.Photo, false, TextAnchor.MiddleLeft);
+                SetView(true, data.photo, false, TextAnchor.MiddleLeft);
                 break;
             case CardType.NameOnlyLeft:
-                SetView(false, data.Photo, false, TextAnchor.MiddleLeft);
+                SetView(false, data.photo, false, TextAnchor.MiddleLeft);
                 break;
             case CardType.NameOnlyCenter:
-                SetView(false, data.Photo, false, TextAnchor.MiddleCenter);
+                SetView(false, data.photo, false, TextAnchor.MiddleCenter);
                 break;
             case CardType.NameOnlyRight:
-                SetView(false, data.Photo, false, TextAnchor.MiddleRight);
+                SetView(false, data.photo, false, TextAnchor.MiddleRight);
                 break;
             case CardType.NameWithBG:
-                SetView(true, data.Photo, false, TextAnchor.MiddleLeft);
+                SetView(true, data.photo, false, TextAnchor.MiddleLeft);
                 break;
             case CardType.NameWithLine:
-                SetView(false, data.Photo, true, TextAnchor.MiddleLeft);
+                SetView(false, data.photo, true, TextAnchor.MiddleLeft);
                 break;
             case CardType.Header:
-                SetView(false, data.Photo, false, TextAnchor.MiddleLeft);
-                HeadText.text = data.Name;
+                SetView(false, data.photo, false, TextAnchor.MiddleLeft);
+                HeadText.text = data.name;
                 NameText.text = "<";
                 break;
             default:

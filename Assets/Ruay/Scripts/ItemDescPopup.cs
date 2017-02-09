@@ -21,26 +21,26 @@ public class ItemDescPopup : Popup {
         {
             photo.gameObject.SetActive(false);
         }
-        if (!string.IsNullOrEmpty(item.Name))
+        if (!string.IsNullOrEmpty(item.name))
         {
-            Name.text  = item.Name;
+            Name.text  = item.name;
         }
         if (int.TryParse(ticket.amount.ToString(),out amount))
         {
             amountText.text = amount.ToString();
         }
-        Choice choice = Array.Find(item.Choices, c => c.Value == ticket.reserveNumber);
-        if (!string.IsNullOrEmpty(choice.Name))
+        Choice choice = Array.Find(item.choices, c => c.value == ticket.reserveNumber);
+        if (!string.IsNullOrEmpty(choice.name))
         {
-            ChoiceText.text = choice.Name;
+            ChoiceText.text = choice.name;
         }
         else
         {
             ChoiceText.text = ticket.reserveNumber.ToString();
         }
-        if (!string.IsNullOrEmpty(item.Description))
+        if (!string.IsNullOrEmpty(item.desc))
         {
-            Description.text = item.Description;
+            Description.text = item.desc;
         }
         Show();
     }
@@ -55,26 +55,26 @@ public class ItemDescPopup : Popup {
         {
             photo.gameObject.SetActive(false);
         }
-        if (!string.IsNullOrEmpty(item.Name))
+        if (!string.IsNullOrEmpty(item.name))
         {
-            Name.text = item.Name;
+            Name.text = item.name;
         }
         if (int.TryParse(reward.amount.ToString(), out amount))
         {
             amountText.text = amount.ToString();
         }
-        Choice choice = Array.Find(item.Choices, c => c.Value == reward.choice);
-        if (!string.IsNullOrEmpty(choice.Name))
+        Choice choice = Array.Find(item.choices, c => c.value == reward.choice);
+        if (!string.IsNullOrEmpty(choice.name))
         {
-            ChoiceText.text = choice.Name;
+            ChoiceText.text = choice.name;
         }
         else
         {
             ChoiceText.text = reward.choice.ToString();
         }
-        if (!string.IsNullOrEmpty(item.Description))
+        if (!string.IsNullOrEmpty(item.desc))
         {
-            Description.text = item.Description;
+            Description.text = item.desc;
         }
         Show();
     }

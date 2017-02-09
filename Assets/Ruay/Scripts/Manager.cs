@@ -130,7 +130,7 @@ public class Manager : Singleton<Manager>
         {
             if (getPage != null)
             {
-               getPage(pages.Find(page => page.Name == pageName));
+               getPage(pages.Find(page => page.name == pageName));
             }
         }
         else
@@ -141,7 +141,7 @@ public class Manager : Singleton<Manager>
     IEnumerator WaitForDonwloadHomeJson(string pageName,GetPage getPage)
     {
         yield return new WaitUntil(()=> pages != null);
-        getPage(pages.Find(page => page.Name == pageName));
+        getPage(pages.Find(page => page.name == pageName));
     }
     public delegate void GetItem(Item item);
     public delegate void GetTicket(Ticket ticket,Item round);
@@ -318,23 +318,23 @@ public class Manager : Singleton<Manager>
     {
         pages.ForEach((page) =>
         {
-            if (page.Name != HomePageName && page.Name != MyTicketsName)
+            if (page.name != HomePageName && page.name != MyTicketsName)
             {
-                page.Cards.Insert(0, BackPageCard(page.Name));
+                page.cards.Insert(0, BackPageCard(page.name));
             }
         });
     }
     void SetMyTicketsPage()
     {
-        Page page = pages.Find(p => p.Name == MyTicketsName);
+        Page page = pages.Find(p => p.name == MyTicketsName);
         if(page == null)
         {
             page = new Page();
-            page.Name = MyTicketsName;
-            page.Cards = new List<Card>();
+            page.name = MyTicketsName;
+            page.cards = new List<Card>();
         }
-        page.Cards.Clear();
-        page.Cards.Add(BackPageCard("สลากของคุณ"));
+        page.cards.Clear();
+        page.cards.Add(BackPageCard("สลากของคุณ"));
         if (tickets != null)
         {
             if (tickets.Length > 0)
@@ -343,22 +343,22 @@ public class Manager : Singleton<Manager>
                 {
                     Card card = new Card();
                     Item round = Array.Find(rounds, r => r.id == tickets[i].roundId);
-                    card.Name = round.Name;
-                    card.NextPage = "Ticket" + i;
-                    card.ViewType = CardType.NameWithLine;
-                    page.Cards.Add(card);
+                    card.name = round.name;
+                    card.nextPage = "Ticket" + i;
+                    card.viewType = CardType.NameWithLine;
+                    page.cards.Add(card);
                 }
             }
             else
             {
-                SetEmptyTicket(page.Cards);
+                SetEmptyTicket(page.cards);
             }
         }
         else
         {
-            SetEmptyTicket(page.Cards);
+            SetEmptyTicket(page.cards);
         }
-        page.Name = MyTicketsName;
+        page.name = MyTicketsName;
         if (!pages.Contains(page))
         {
             pages.Add(page);
@@ -367,21 +367,21 @@ public class Manager : Singleton<Manager>
     void SetEmptyTicket(List<Card> cards)
     {
         Card card = new Card();
-        card.Name = "ไม่มีอะ ลองแลกสลากดูซิ";
-        card.ViewType = CardType.NameOnlyRight;
+        card.name = "ไม่มีอะ ลองแลกสลากดูซิ";
+        card.viewType = CardType.NameOnlyRight;
         cards.Add(card);
     }
     void SetMyRewardsPage()
     {
-        Page page = pages.Find(p => p.Name == MyRewardsName);
+        Page page = pages.Find(p => p.name == MyRewardsName);
         if (page == null)
         {
             page = new Page();
-            page.Name = MyRewardsName;
-            page.Cards = new List<Card>();
+            page.name = MyRewardsName;
+            page.cards = new List<Card>();
         }
-        page.Cards.Clear();
-        page.Cards.Add(BackPageCard("ของขวัญ"));
+        page.cards.Clear();
+        page.cards.Add(BackPageCard("ของขวัญ"));
         if (rewards != null)
         {
             if (rewards.Length > 0)
@@ -390,22 +390,22 @@ public class Manager : Singleton<Manager>
                 {
                     Card card = new Card();
                     Item round = Array.Find(items, r => r.id == rewards[i].itemId);
-                    card.Name = round.Name;
-                    card.NextPage = "Reward" + i;
-                    card.ViewType = CardType.NameWithLine;
-                    page.Cards.Add(card);
+                    card.name = round.name;
+                    card.nextPage = "Reward" + i;
+                    card.viewType = CardType.NameWithLine;
+                    page.cards.Add(card);
                 }
             }
             else
             {
-                SetEmptyReward(page.Cards);
+                SetEmptyReward(page.cards);
             }
         }
         else
         {
-            SetEmptyReward(page.Cards);
+            SetEmptyReward(page.cards);
         }
-        page.Name = MyRewardsName;
+        page.name = MyRewardsName;
         if (!pages.Contains(page))
         {
             pages.Add(page);
@@ -414,16 +414,16 @@ public class Manager : Singleton<Manager>
     void SetEmptyReward(List<Card> cards)
     {
         Card card = new Card();
-        card.Name = "ไม่มีอะ ลองแลกของขวัญดูน่ะ";
-        card.ViewType = CardType.NameOnlyRight;
+        card.name = "ไม่มีอะ ลองแลกของขวัญดูน่ะ";
+        card.viewType = CardType.NameOnlyRight;
         cards.Add(card);
     }
     Card BackPageCard(string pageName)
     {
             Card card = new Card();
-            card.Name = pageName;
-            card.ViewType = CardType.Header;
-            card.NextPage = "Back";
+            card.name = pageName;
+            card.viewType = CardType.Header;
+            card.nextPage = "Back";
             return card;
     }
     public OnSyncCallback OnError;

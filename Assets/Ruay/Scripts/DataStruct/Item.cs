@@ -3,20 +3,22 @@
 public struct Item
 {
     public string id;
-    public string Name;
-    public string Photo;
-    public string Ratio;
-    public string Description;
-    public int Price;
-    public string DiscountPercent;
-    public string DiscountPrice;
-    public int ExpireDate;
-    public int StartDate;
-    public Choice[] Choices;
+    public string name;
+    public string photo;
+    public string ratio;
+    public string desc;
+    public int price;
+    public int limit;
+    public string discountPercent;
+    public string discountPrice;
+    public int startDate;
+    public int expireDate;
+    public Choice[] choices;
+
 }
 [Serializable]
 public struct Choice
 {
-    public string Name;
-    public int Value;
+    public string name;
+    public int value;
 }
