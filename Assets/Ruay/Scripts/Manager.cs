@@ -635,7 +635,7 @@ public class Manager : Singleton<Manager>
     {
         LambdaBuyTicket ticket = new LambdaBuyTicket();
         ticket.roundId = id;
-        ticket.number = number;
+        ticket.reserveNumber = number;
         ticket.amount = amount;
         LambdaClient.InvokeAsync(new Amazon.Lambda.Model.InvokeRequest()
         {

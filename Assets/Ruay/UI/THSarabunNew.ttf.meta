@@ -4,11 +4,12 @@ timeCreated: 1483334502
 licenseType: Pro
 TrueTypeFontImporter:
   serializedVersion: 4
-  fontSize: 50
-  forceTextureCase: -2
+  fontSize: 100
+  forceTextureCase: -1
   characterSpacing: 0
   characterPadding: 1
   includeFontData: 1
+  fontName: TH Sarabun New
   fontNames:
   - TH Sarabun New
   fallbackFontReferences: []

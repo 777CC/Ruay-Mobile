@@ -4,7 +4,7 @@ using System;
 public struct LambdaBuyTicket
 {
     public string roundId;
-    public int number;
+    public int reserveNumber;
     public int amount;
 }
 
