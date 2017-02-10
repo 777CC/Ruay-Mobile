@@ -5,15 +5,9 @@ using UnityEngine.UI;
 public class Popup : MonoBehaviour {
     [SerializeField]
     protected CanvasGroup canvasGroup;
-    protected Item round;
-    protected int amount = 1;
-    [SerializeField]
-    protected Text amountText;
     public virtual void Start()
     {
-        Debug.Log("PopupEndDrag");
         PopupEndDrag drag = GetComponentInChildren<PopupEndDrag>();
-        Debug.Log(drag.name);
         if(drag != null)
         {
             drag.OnBack = Back;

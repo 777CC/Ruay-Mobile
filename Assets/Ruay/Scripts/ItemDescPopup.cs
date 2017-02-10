@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 using UnityEngine.UI;
-public class ItemDescPopup : Popup {
+public class ItemDescPopup : RoundPopup {
     [SerializeField]
     private RawImage photo;
     [SerializeField]
@@ -63,14 +63,14 @@ public class ItemDescPopup : Popup {
         {
             amountText.text = amount.ToString();
         }
-        Choice choice = Array.Find(item.choices, c => c.value == reward.choice);
+        Choice choice = Array.Find(item.choices, c => c.value == reward.option);
         if (!string.IsNullOrEmpty(choice.name))
         {
             ChoiceText.text = choice.name;
         }
         else
         {
-            ChoiceText.text = reward.choice.ToString();
+            ChoiceText.text = reward.option.ToString();
         }
         if (!string.IsNullOrEmpty(item.desc))
         {

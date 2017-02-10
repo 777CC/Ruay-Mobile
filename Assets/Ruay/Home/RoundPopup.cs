@@ -1,12 +1,14 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-public class RoundPage : Popup {
+public class RoundPopup : Popup {
+    protected Item round;
+    protected int amount = 1;
+    [SerializeField]
+    protected Text amountText;
     [SerializeField]
     private Text priceText;
     [SerializeField]
     private Text confirmationText;
-    [SerializeField]
-    private GameObject errorText;
     [SerializeField]
     private CanvasGroup confirmationCanvasGroup;
     protected bool isItem = true;
@@ -35,19 +37,23 @@ public class RoundPage : Popup {
     }
     public void Confirmation()
     {
-        int satang = Manager.Instance.satang;
         int pay = amount * round.price;
-        int balance = satang - pay;
-        if (balance >= 0)
+        int balance = Manager.Instance.satang - pay;
+        int allAmount = Manager.Instance.GetRoundAmountById(round.id) + amount;
+        if (balance < 0)
+        {
+            Manager.Instance.DialogPopup("สตางค์ไม่พอน่ะ", "", null, null);
+        }
+        //else if (allAmount >= round.limit)
+        else if (false)
+        {
+            Manager.Instance.DialogPopup("ไม่สามารถแลกได้", "คุณมี " + allAmount + "ใบ จำกัดแค่ " + round.limit + "ใบ", null, null);
+        }
+        else
         {
             confirmationText.text = amount.ToString() + "\n" +
                                 pay.ToString() + "\n" +
                                 balance.ToString();
-            ShowConfirmation();
-        }
-        else
-        {
-            errorText.SetActive(true);
             ShowConfirmation();
         }
     }
@@ -62,6 +68,5 @@ public class RoundPage : Popup {
         LeanTween.alphaCanvas(confirmationCanvasGroup, 0, 0.15f);
         confirmationCanvasGroup.interactable = false;
         confirmationCanvasGroup.blocksRaycasts = false;
-        errorText.SetActive(false);
     }
 }

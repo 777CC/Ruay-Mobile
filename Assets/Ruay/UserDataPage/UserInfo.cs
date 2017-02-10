@@ -7,9 +7,7 @@ using Amazon.CognitoSync.SyncManager;
 
 public class UserInfo : MonoBehaviour
 {
-    public GameObject Popup;
     public GameObject Loading;
-    public Text PopupText;
     public Animator AllPageAni;
     public Button Next;
     const string NextStr = "Next";
@@ -77,22 +75,20 @@ public class UserInfo : MonoBehaviour
     void NamePageValidtation()
     {
         bool isValid = true;
-        PopupText.text = string.Empty;
+        string message = string.Empty;
         if (Manager.Instance.firstName == string.Empty)
         {
-            PopupText.text += "-กรุณาใส่ชื่อ\n";
+            message += "-กรุณาใส่ชื่อ\n";
             isValid = false;
         }
         if (Manager.Instance.lastName == string.Empty)
         {
-            Debug.Log("last");
-            PopupText.text += "-กรุณาใส่นามสกุล\n";
+            message += "-กรุณาใส่นามสกุล\n";
             isValid = false;
         }
         if (Manager.Instance.tel == 0)
         {
-            Debug.Log("last");
-            PopupText.text += "-กรุณาใส่เบอร์มือถือ\n";
+            message += "-กรุณาใส่เบอร์มือถือ\n";
             isValid = false;
         }
 
@@ -102,16 +98,16 @@ public class UserInfo : MonoBehaviour
         }
         else
         {
-            Popup.gameObject.SetActive(true);
+            Manager.Instance.DialogPopup("", message, null, null);
         }
     }
     void BirthDayValidtation()
     {
         bool isValid = true;
-        PopupText.text = string.Empty;
+        string message = string.Empty;
         if (Manager.Instance.birthday == 0)
         {
-            PopupText.text += "-กรุณาใส่วันเกิด\n";
+            message += "-กรุณาใส่วันเกิด\n";
             isValid = false;
         }
         if (isValid)
@@ -120,16 +116,16 @@ public class UserInfo : MonoBehaviour
         }
         else
         {
-            Popup.gameObject.SetActive(true);
+            Manager.Instance.DialogPopup("", message, null, null);
         }
     }
     void GenderValidation()
     {
         bool isValid = true;
-        PopupText.text = string.Empty;
+        string message = string.Empty;
         if (Manager.Instance.gender == string.Empty)
         {
-            PopupText.text += "-กรุณาใส่เพศ\n";
+            message += "-กรุณาใส่เพศ\n";
             isValid = false;
         }
         if (isValid)
@@ -138,30 +134,29 @@ public class UserInfo : MonoBehaviour
         }
         else
         {
-            Popup.gameObject.SetActive(true);
+            Manager.Instance.DialogPopup("", message, null, null);
         }
     }
     void InterestValidation()
     {
         bool isValid = true;
-        PopupText.text = string.Empty;
+        string message = string.Empty;
         if (interestController.userInterests.Count < 3)
         {
-            PopupText.text += "-กรุณาเลือกสิ่งที่สนใจอย่างน้อย 3 อย่าง";
+            message += "-กรุณาเลือกสิ่งที่สนใจอย่างน้อย 3 อย่าง";
             isValid = false;
         }
         if (isValid)
         {
             SetInterest(InterestsToString(interestController.userInterests));
             Loading.gameObject.SetActive(true);
-            //Validated();
             Manager.Instance.OnSyncSuccess = HandleSyncSuccess;
             Manager.Instance.OnSyncFailure = HandleSyncFailure;
             Manager.Instance.UpdateUserInfo();
         }
         else
         {
-            Popup.gameObject.SetActive(true);
+            Manager.Instance.DialogPopup("", message, null, null);
         }
     }
     private string InterestsToString(List<string> names)
@@ -183,17 +178,9 @@ public class UserInfo : MonoBehaviour
     }
     private void HandleSyncFailure(string exception)
     {
-        //var dataset = sender as Dataset;
-        //Debug.Log("Sync failed for dataset : " + dataset.Metadata.DatasetName);
-        //Debug.LogException(e.Exception);
-        PopupText.text = "กรุณาลองใหม่อีกครั้ง\nสามารถแคปหน้าจอส่งพนักงานได้\n" + exception;
-        Popup.SetActive(true);
-        Popup.GetComponentInChildren<Button>().onClick.AddListener(() => {
+        Manager.Instance.DialogPopup("", "กรุณาลองใหม่อีกครั้ง\nสามารถแคปหน้าจอส่งพนักงานได้\n" + exception, () => {
             SceneManager.LoadScene("Login");
-        });
-        //statusMessage = "Syncing to CognitoSync Cloud failed";
-       
-        //updateUIValue();
+        }, null);
     }
     public void NextPage()
     {

@@ -4,7 +4,7 @@ using EnhancedUI.EnhancedScroller;
 using System.Text;
 using UnityEngine.UI;
 
-public class Lotto : RoundPage {
+public class Lotto : RoundPopup {
     [SerializeField]
     LottoNumberController[] numberScroller;
     private string number = "999999";
@@ -43,7 +43,9 @@ public class Lotto : RoundPage {
         int n;
         if (int.TryParse(number,out n))
         {
-            Manager.Instance.BuyRound(round.id, n, amount);
+            Manager.Instance.BuyRound(round.id, n, amount,() => {
+
+            });
         }
     }
     public void RandomFirst()

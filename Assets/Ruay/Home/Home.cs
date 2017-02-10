@@ -12,6 +12,10 @@ public class Home : MonoBehaviour {
     [SerializeField]
     public Page[] pages;
     void Start () {
+        //Manager.Instance.DialogPopup("Test", "ujfiodasjfpodisajfiodsjafdsjafiodsjafoidjsa00\nfdsafdas", () =>
+        //{
+        //    Debug.Log("OKKKKK!!!");
+        //}, null);
         //string test = JsonUtility.ToJson(this);
         //Debug.Log("test : " + test.Length);
         //string path = Application.streamingAssetsPath + @"\test.txt";
@@ -22,7 +26,7 @@ public class Home : MonoBehaviour {
         //JsonUtility.FromJsonOverwrite(text.text, this);
         //pages = JsonHelper.getJsonArray<Page>(text.text);
         //Debug.Log(JsonUtility.ToJson(this));
-        StartCoroutine(TestWWW());
+        //StartCoroutine(TestWWW());
     }
     IEnumerator TestWWW()
     {

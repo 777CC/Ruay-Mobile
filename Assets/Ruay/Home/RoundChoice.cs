@@ -3,7 +3,7 @@ using UnityEngine.UI;
 using System.Collections;
 using System;
 
-public class RoundChoice : RoundPage
+public class RoundChoice : RoundPopup
 {
     private Choice currentChoice;
     [SerializeField]
@@ -98,7 +98,7 @@ public class RoundChoice : RoundPage
         }
         else
         {
-            Manager.Instance.BuyRound(round.id, currentChoice.value, amount);
+            Manager.Instance.BuyRound(round.id, currentChoice.value, amount,()=> { });
         }
     }
 }

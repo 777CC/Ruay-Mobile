@@ -120,7 +120,7 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
     }
     void ShowItem(string prefabName,Item r,bool isItem,Texture tex)
     {
-        RoundPage round = Instantiate(Resources.Load<GameObject>(prefabName)).GetComponent<RoundPage>();
+        RoundPopup round = Instantiate(Resources.Load<GameObject>(prefabName)).GetComponent<RoundPopup>();
         round.transform.SetParent(FindObjectOfType<Canvas>().transform, false);
         round.transform.SetSiblingIndex(homeCanvasGroup.transform.GetSiblingIndex() + 1);
         round.SetItem(r, isItem,tex);

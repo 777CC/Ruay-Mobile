@@ -53,9 +53,9 @@ public class Manager : Singleton<Manager>
     public int birthday = 0;
     public string interests = string.Empty;
     [SerializeField]
-    private Ticket[] tickets;
+    private List<Ticket> tickets;
     [SerializeField]
-    private Reward[] rewards;
+    private List<Reward> rewards;
     public string[] Event;
     #endregion
     
@@ -169,7 +169,7 @@ public class Manager : Singleton<Manager>
     {
         if (tickets != null)
         {
-            if (getTicket != null && index < tickets.Length)
+            if (getTicket != null && index < tickets.Count)
             {
                 getTicket(tickets[index], Array.Find(rounds, r => r.id == tickets[index].roundId));
             }
@@ -179,7 +179,7 @@ public class Manager : Singleton<Manager>
     {
         if (rewards != null)
         {
-            if (getReward != null && Index < rewards.Length)
+            if (getReward != null && Index < rewards.Count)
             {
                 getReward(rewards[Index], Array.Find(items, r => r.id == rewards[Index].itemId));
             }
@@ -337,9 +337,9 @@ public class Manager : Singleton<Manager>
         page.cards.Add(BackPageCard("สลากของคุณ"));
         if (tickets != null)
         {
-            if (tickets.Length > 0)
+            if (tickets.Count > 0)
             {
-                for (int i = 0; i < tickets.Length; i++)
+                for (int i = 0; i < tickets.Count; i++)
                 {
                     Card card = new Card();
                     Item round = Array.Find(rounds, r => r.id == tickets[i].roundId);
@@ -384,9 +384,9 @@ public class Manager : Singleton<Manager>
         page.cards.Add(BackPageCard("ของขวัญ"));
         if (rewards != null)
         {
-            if (rewards.Length > 0)
+            if (rewards.Count > 0)
             {
-                for (int i = 0; i < rewards.Length; i++)
+                for (int i = 0; i < rewards.Count; i++)
                 {
                     Card card = new Card();
                     Item round = Array.Find(items, r => r.id == rewards[i].itemId);
@@ -567,8 +567,16 @@ public class Manager : Singleton<Manager>
             birthday = date;
         }
         interests = UserInfo.Get("interests");
-        tickets = JsonHelper.getJsonArray<Ticket>(UserInfo.Get("tickets"));
-        rewards = JsonHelper.getJsonArray<Reward>(UserInfo.Get("rewards"));
+        Ticket[] tk = JsonHelper.getJsonArray<Ticket>(UserInfo.Get("tickets"));
+        Reward[] rw = JsonHelper.getJsonArray<Reward>(UserInfo.Get("rewards"));
+        if(tk!=null)
+        {
+            tickets = new List<Ticket>(tk);
+        }
+        if (rw != null)
+        {
+            rewards = new List<Reward>(rw);
+        }
         SetMyTicketsPage();
         SetMyRewardsPage();
         Save();
@@ -630,8 +638,25 @@ public class Manager : Singleton<Manager>
     }
     #endregion
 
+    public void DialogPopup(string header,string desc,Action onAccept,Action onCancel)
+    {
+        DialogPopup popup = Instantiate(Resources.Load<GameObject>("DialogPopup"), FindObjectOfType<Canvas>().transform, false).GetComponent<DialogPopup>();
+        popup.SetDialog(header, desc, onAccept, onCancel);
+    }
+    public int GetRoundAmountById(string id)
+    {
+        int amount = 0;
+        if (tickets != null)
+        {
+            tickets.FindAll((tk) => tk.roundId == id).ForEach((tk) =>
+            {
+                amount += tk.amount;
+            });
+        }
+        return amount;
+    }
     #region App Service
-    public void BuyRound(string id,int number,int amount)
+    public void BuyRound(string id,int number,int amount,Action onSuccess)
     {
         LambdaBuyTicket ticket = new LambdaBuyTicket();
         ticket.roundId = id;
@@ -644,19 +669,35 @@ public class Manager : Singleton<Manager>
         },
         (responseObject) =>
         {
+            Debug.Log("Callback + " + Encoding.ASCII.GetString(responseObject.Response.Payload.ToArray()));
             if (responseObject.Exception == null)
             {
-                Debug.Log(JsonUtility.ToJson(responseObject.Response));
-                Debug.Log( Encoding.ASCII.GetString(responseObject.Response.Payload.ToArray()));
+                string res = Encoding.ASCII.GetString(responseObject.Response.Payload.ToArray());
+                Ticket newTicket = JsonUtility.FromJson<Ticket>(res);
+                Debug.Log(newTicket.roundId + res);
+                if (!string.IsNullOrEmpty(newTicket.roundId))
+                {
+                    tickets.Add(newTicket);
+                    SetMyTicketsPage();
+                    if (onSuccess != null)
+                    {
+                        onSuccess();
+                    }
+                    DialogPopup("รับฉลากเรียบร้อย", "สามารถดูได้ที่หน้าฉลากทั้งหมด", null, null);
+                }
+                else
+                {
+                    DialogPopup("ไม่สามารถรับได้", res, null, null);
+                }
             }
             else
             {
-                Debug.Log(responseObject.Exception);
-                Debug.Log(JsonUtility.ToJson( responseObject.Response));
+                DialogPopup("ไม่สามารถรับได้", responseObject.Exception.ToString(), null, null);
             }
         }
         );
     }
+
     public void BuyItem(string id, string number, int amount)
     {
         Debug.Log("Buy item :" + id + " : " + number + " : " + amount);
