@@ -12,6 +12,13 @@ public class Home : MonoBehaviour {
     [SerializeField]
     public Page[] pages;
     void Start () {
+        //Ticket tk = new Ticket();
+        //tk.createdOn = 777;
+        //tk.announced = false;
+        //string test = JsonUtility.ToJson(tk);
+        //Debug.Log(test);
+        //Ticket ticket = JsonUtility.FromJson<Ticket>(test);
+        //Debug.Log(ticket.createdOn);
         //Manager.Instance.DialogPopup("Test", "ujfiodasjfpodisajfiodsjafdsjafiodsjafoidjsa00\nfdsafdas", () =>
         //{
         //    Debug.Log("OKKKKK!!!");

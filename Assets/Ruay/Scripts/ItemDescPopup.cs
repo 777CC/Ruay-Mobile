@@ -12,42 +12,29 @@ public class ItemDescPopup : RoundPopup {
     private Text Description;
     public void SetTicket(Item item,Ticket ticket, Texture tex)
     {
-        if (tex)
-        {
-            photo.gameObject.SetActive(true);
-            photo.texture = tex;
-        }
-        else
-        {
-            photo.gameObject.SetActive(false);
-        }
-        if (!string.IsNullOrEmpty(item.name))
-        {
-            Name.text  = item.name;
-        }
-        if (int.TryParse(ticket.amount.ToString(),out amount))
-        {
-            amountText.text = amount.ToString();
-        }
         Choice choice = Array.Find(item.choices, c => c.value == ticket.reserveNumber);
-        if (!string.IsNullOrEmpty(choice.name))
+        string choiceName = choice.name;
+        if (string.IsNullOrEmpty(choiceName))
         {
-            ChoiceText.text = choice.name;
+            if (!string.IsNullOrEmpty(round.id))
+            {
+                if (round.id[0] == 'A')
+                {
+                    choiceName = ticket.reserveNumber.ToString("000000");
+                }
+            }
         }
-        else
-        {
-            ChoiceText.text = ticket.reserveNumber.ToString();
-        }
-        if (!string.IsNullOrEmpty(item.desc))
-        {
-            Description.text = item.desc;
-        }
-        Show();
+        SetView(tex,item.name,ticket.amount, choiceName,item.desc);
     }
     public void SetReward(Item item, Reward reward,Texture tex)
     {
+        Choice choice = Array.Find(item.choices, c => c.value == reward.choice);
+        SetView(tex, item.name, reward.amount, choice.name, item.desc);
+    }
+    void SetView(Texture tex,string name,int amount,string choice, string desc)
+    {
         if (tex)
-        {   
+        {
             photo.gameObject.SetActive(true);
             photo.texture = tex;
         }
@@ -55,26 +42,25 @@ public class ItemDescPopup : RoundPopup {
         {
             photo.gameObject.SetActive(false);
         }
-        if (!string.IsNullOrEmpty(item.name))
+        if (!string.IsNullOrEmpty(name))
         {
-            Name.text = item.name;
+            Name.text = name;
         }
-        if (int.TryParse(reward.amount.ToString(), out amount))
+        if (int.TryParse(amount.ToString(), out this.amount))
         {
-            amountText.text = amount.ToString();
+            amountText.text = this.amount.ToString();
         }
-        Choice choice = Array.Find(item.choices, c => c.value == reward.option);
-        if (!string.IsNullOrEmpty(choice.name))
+        if (!string.IsNullOrEmpty(choice))
         {
-            ChoiceText.text = choice.name;
+            ChoiceText.text = choice;
         }
         else
         {
-            ChoiceText.text = reward.option.ToString();
+            ChoiceText.gameObject.SetActive(false);
         }
-        if (!string.IsNullOrEmpty(item.desc))
+        if (!string.IsNullOrEmpty(desc))
         {
-            Description.text = item.desc;
+            Description.text = desc;
         }
         Show();
     }

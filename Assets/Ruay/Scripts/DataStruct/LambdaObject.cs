@@ -7,4 +7,11 @@ public struct LambdaBuyTicket
     public int reserveNumber;
     public int amount;
 }
+[Serializable]
+public struct LambdaBuyReward
+{
+    public string itemId;
+    public int choice;
+    public int amount;
+}
 

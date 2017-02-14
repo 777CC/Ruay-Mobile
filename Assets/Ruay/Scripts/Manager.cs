@@ -656,7 +656,7 @@ public class Manager : Singleton<Manager>
         return amount;
     }
     #region App Service
-    public void BuyRound(string id,int number,int amount,Action onSuccess)
+    public void BuyRound(string id, int number, int amount, Action onSuccess)
     {
         LambdaBuyTicket ticket = new LambdaBuyTicket();
         ticket.roundId = id;
@@ -669,16 +669,17 @@ public class Manager : Singleton<Manager>
         },
         (responseObject) =>
         {
-            Debug.Log("Callback + " + Encoding.ASCII.GetString(responseObject.Response.Payload.ToArray()));
             if (responseObject.Exception == null)
             {
                 string res = Encoding.ASCII.GetString(responseObject.Response.Payload.ToArray());
                 Ticket newTicket = JsonUtility.FromJson<Ticket>(res);
-                Debug.Log(newTicket.roundId + res);
                 if (!string.IsNullOrEmpty(newTicket.roundId))
                 {
                     tickets.Add(newTicket);
                     SetMyTicketsPage();
+                    
+                    satang -= Array.Find(rounds, (r) => r.id == newTicket.roundId).price * newTicket.amount;
+                    Save();
                     if (onSuccess != null)
                     {
                         onSuccess();
@@ -694,13 +695,50 @@ public class Manager : Singleton<Manager>
             {
                 DialogPopup("ไม่สามารถรับได้", responseObject.Exception.ToString(), null, null);
             }
-        }
-        );
+        });
     }
 
-    public void BuyItem(string id, string number, int amount)
+    public void BuyItem(string id, int choice, int amount, Action onSuccess)
     {
-        Debug.Log("Buy item :" + id + " : " + number + " : " + amount);
+        LambdaBuyReward reward = new LambdaBuyReward();
+        reward.itemId = id;
+        reward.choice = choice;
+        reward.amount = amount;
+        Debug.Log(JsonUtility.ToJson(reward));
+        LambdaClient.InvokeAsync(new Amazon.Lambda.Model.InvokeRequest()
+        {
+            FunctionName = "BuyReward",
+            Payload = JsonUtility.ToJson(reward)
+        },
+        (responseObject) =>
+        {
+            if (responseObject.Exception == null)
+            {
+                string res = Encoding.ASCII.GetString(responseObject.Response.Payload.ToArray());
+                Reward newReward = JsonUtility.FromJson<Reward>(res);
+                if (!string.IsNullOrEmpty(newReward.itemId))
+                {
+                    rewards.Add(newReward);
+                    SetMyRewardsPage();
+
+                    satang -= Array.Find(rounds, (r) => r.id == newReward.itemId).price * newReward.amount;
+                    Save();
+                    if (onSuccess != null)
+                    {
+                        onSuccess();
+                    }
+                    DialogPopup("แลกของขวัญเรียบร้อย", "สามารถดูได้ที่หน้าของขวัญ", null, null);
+                }
+                else
+                {
+                    DialogPopup("ไม่สามารถรับได้", res, null, null);
+                }
+            }
+            else
+            {
+                DialogPopup("ไม่สามารถรับได้", responseObject.Exception.ToString(), null, null);
+            }
+        });
     }
     #endregion
 }

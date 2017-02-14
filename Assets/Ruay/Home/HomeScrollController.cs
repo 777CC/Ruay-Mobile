@@ -26,15 +26,20 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
         scroller = GetComponent<EnhancedScroller>();
         // create a new data list for the slots
         //card = new SmallList<Card>();
-        Manager.Instance.DownloadHomeJson(()=> { });
-        NextPage("Home",null);
+#if UNITY_EDITOR
+        Manager.Instance.DownloadHomeJson(()=> {  });
+#endif
+        NextPage("Home", null);
     }
 #if UNITY_ANDROID
     public virtual void Update()
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            BackPage();
+            if (FindObjectOfType<Popup>() == null)
+            {
+                BackPage();
+            }
         }
     }
 #endif

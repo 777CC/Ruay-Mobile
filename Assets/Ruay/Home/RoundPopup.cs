@@ -23,13 +23,16 @@ public class RoundPopup : Popup {
     
     public void AddMount(int value)
     {
-        amount += value;
-        if (amount < 1)
+        if (round.price * value <= Manager.Instance.satang)
         {
-            amount = 1;
+            amount += value;
+            if (amount < 1)
+            {
+                amount = 1;
+            }
+            amountText.text = amount.ToString();
+            SetPrice();
         }
-        amountText.text = amount.ToString();
-        SetPrice();
     }
     protected void SetPrice()
     {
@@ -39,15 +42,14 @@ public class RoundPopup : Popup {
     {
         int pay = amount * round.price;
         int balance = Manager.Instance.satang - pay;
-        int allAmount = Manager.Instance.GetRoundAmountById(round.id) + amount;
+        int have = Manager.Instance.GetRoundAmountById(round.id);
         if (balance < 0)
         {
             Manager.Instance.DialogPopup("สตางค์ไม่พอน่ะ", "", null, null);
         }
-        //else if (allAmount >= round.limit)
-        else if (false)
+        else if (have + amount > round.limit)
         {
-            Manager.Instance.DialogPopup("ไม่สามารถแลกได้", "คุณมี " + allAmount + "ใบ จำกัดแค่ " + round.limit + "ใบ", null, null);
+            Manager.Instance.DialogPopup("ไม่สามารถแลกได้", "คุณมี " + have + "ใบ จำกัดแค่ " + round.limit + "ใบ", null, null);
         }
         else
         {

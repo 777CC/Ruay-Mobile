@@ -23,6 +23,8 @@ public class RoundChoice : RoundPopup
     [SerializeField]
     Text Desc;
     [SerializeField]
+    Button ConfirmButton;
+    [SerializeField]
     Text ConfirmHeader;
     public override void SetItem(Item r,bool isItem,Texture tex)
     {
@@ -38,37 +40,42 @@ public class RoundChoice : RoundPopup
         }
         if (r.choices != null)
         {
-            if (r.choices.Length == 2)
+            if (r.choices.Length < 2)
+            {
+                ConfirmButton.gameObject.SetActive(true);
+            }
+            else if (r.choices.Length == 2)
             {
                 Choice1.name = r.choices[0].name;
                 Choice2.name = r.choices[1].name;
             }
-            else if(r.choices.Length > 2)
+            else if (r.choices.Length > 2)
             {
-                for(int i = 0; i<r.choices.Length;i++)
+                for (int i = 0; i < r.choices.Length; i++)
                 {
                     GameObject go;
-                    if(i == 0)
+                    if (i == 0)
                     {
                         MultiChoice.SetActive(true);
                         go = MultiChoice;
-                        MultiChoice.GetComponentInChildren<Text>().text = r.choices[0].name;
-                        MultiChoice.GetComponent<Button>().onClick.AddListener(() => {
-                            Choose(r.choices[0]);
-                        });
                     }
                     else
                     {
-                        go = Instantiate(MultiChoice,MultiChoice.transform.parent,false);
+                        go = Instantiate(MultiChoice, MultiChoice.transform.parent, false);
                     }
                     go.transform.SetSiblingIndex(MultiChoice.transform.GetSiblingIndex() + i);
                     go.GetComponentInChildren<Text>().text = r.choices[i].name;
                     int index = i;
-                    go.GetComponent<Button>().onClick.AddListener(() => {
+                    go.GetComponent<Button>().onClick.AddListener(() =>
+                    {
                         Choose(r.choices[index]);
                     });
                 }
             }
+        }
+        else
+        {
+            ConfirmButton.gameObject.SetActive(true);
         }
         if(!string.IsNullOrEmpty(r.ratio))
         {
@@ -94,11 +101,15 @@ public class RoundChoice : RoundPopup
     {
         if (isItem)
         {
-            Manager.Instance.BuyItem(round.id, currentChoice.value.ToString(), amount);
+            Manager.Instance.BuyItem(round.id, currentChoice.value, amount,()=> {
+                Back();
+            });
         }
         else
         {
-            Manager.Instance.BuyRound(round.id, currentChoice.value, amount,()=> { });
+            Manager.Instance.BuyRound(round.id, currentChoice.value, amount,()=> {
+                Back();
+            });
         }
     }
 }
