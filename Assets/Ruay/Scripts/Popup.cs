@@ -1,10 +1,21 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 public class Popup : MonoBehaviour {
     [SerializeField]
     protected CanvasGroup canvasGroup;
+    [SerializeField]
+    protected ScrollRect scrollRect;
+    public Action OnBack;
+    public ScrollRect ContentScroll
+    {
+        get
+        {
+            return scrollRect;
+        }
+    }
     public virtual void Start()
     {
         PopupEndDrag drag = GetComponentInChildren<PopupEndDrag>();
@@ -34,6 +45,10 @@ public class Popup : MonoBehaviour {
         {
             LeanTween.alphaCanvas(canvasGroup, 0, 0.3f).setOnComplete(() =>
             {
+                if(OnBack != null)
+                {
+                    OnBack();
+                }
                 Destroy(gameObject);
             });
         }

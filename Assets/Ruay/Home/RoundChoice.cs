@@ -15,8 +15,6 @@ public class RoundChoice : RoundPopup
     [SerializeField]
     GameObject MultiChoice;
     [SerializeField]
-    Text HeadText;
-    [SerializeField]
     RawImage Photo;
     [SerializeField]
     Text RatioText;
@@ -84,10 +82,6 @@ public class RoundChoice : RoundPopup
         else
         {
             RatioText.gameObject.SetActive(false);
-        }
-        if (!string.IsNullOrEmpty(r.name))
-        {
-            HeadText.text = r.name;
         }
         Desc.text = r.desc;
     }

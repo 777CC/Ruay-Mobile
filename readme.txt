@@ -1,11 +1,12 @@
 Install
 -Unity3D
+-JDK 1.8
 -Android Studio
 -Set andriod sdk path in unity3d
 -Plugin facebooksdk
 -OpenSSL64
 -Set OpenSSL Path(environment variables in windows)
--Set Java Path(C:\Program Files\Android\Android Studio\jre\bin)
+//-Set Java Path(C:\Program Files\Android\Android Studio\jre\bin)
 -Set android minimun API Level same as facebook used.[in AndroidManifest.xml ->  <uses-sdk android:minSdkVersion="15" />]
 -Add detail to developer facebook web.
 

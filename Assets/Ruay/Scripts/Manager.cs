@@ -88,9 +88,11 @@ public class Manager : Singleton<Manager>
     //private int updateTimeCount = 86400000;//milliseconds in Day.
     [SerializeField]
     private double updateTimeCount = 180000;
-    const string HomePageName = "Home";
-    const string MyTicketsName = "MyTickets";
-    const string MyRewardsName = "MyRewards";
+    public const string HomePageName = "Home";
+    const string MyTicketsPageId = "MyTickets";
+    const string MyTicketsPageName = "ฉลากของคุณ";
+    const string MyRewardsPageId = "MyRewards";
+    const string MyRewardsPageName = "ของขวัญ";
     private const float imageW = 1032f;
     private const float screenW = 1080f;
     private const float screenHRatio = 2.048f;
@@ -124,24 +126,24 @@ public class Manager : Singleton<Manager>
     [SerializeField]
     private Item[] items;
     public delegate void GetPage(Page page);
-    public void GetPageByName(string pageName,GetPage getPage)
+    public void GetPageById(string pageId,GetPage getPage)
     {
         if (pages != null)
         {
             if (getPage != null)
             {
-               getPage(pages.Find(page => page.name == pageName));
+               getPage(pages.Find(page => page.id == pageId));
             }
         }
         else
         {
-            StartCoroutine( WaitForDonwloadHomeJson(pageName,getPage));
+            StartCoroutine( WaitForDonwloadHomeJson(pageId,getPage));
         }
     }
-    IEnumerator WaitForDonwloadHomeJson(string pageName,GetPage getPage)
+    IEnumerator WaitForDonwloadHomeJson(string pageId,GetPage getPage)
     {
         yield return new WaitUntil(()=> pages != null);
-        getPage(pages.Find(page => page.name == pageName));
+        getPage(pages.Find(page => page.id == pageId));
     }
     public delegate void GetItem(Item item);
     public delegate void GetTicket(Ticket ticket,Item round);
@@ -318,7 +320,8 @@ public class Manager : Singleton<Manager>
     {
         pages.ForEach((page) =>
         {
-            if (page.name != HomePageName && page.name != MyTicketsName)
+            //if (page.name != HomePageName && page.name != MyTicketsName && page.name != MyRewardsName)
+            if (page.id != MyTicketsPageId && page.id != MyRewardsPageId)
             {
                 page.cards.Insert(0, BackPageCard(page.name));
             }
@@ -326,15 +329,15 @@ public class Manager : Singleton<Manager>
     }
     void SetMyTicketsPage()
     {
-        Page page = pages.Find(p => p.name == MyTicketsName);
+        Page page = pages.Find(p => p.id == MyTicketsPageId);
         if(page == null)
         {
             page = new Page();
-            page.name = MyTicketsName;
-            page.cards = new List<Card>();
         }
-        page.cards.Clear();
-        page.cards.Add(BackPageCard("สลากของคุณ"));
+        page.id = MyTicketsPageId;
+        page.name = MyTicketsPageName;
+        page.cards = new List<Card>();
+        page.cards.Add(BackPageCard(page.name));
         if (tickets != null)
         {
             if (tickets.Count > 0)
@@ -358,7 +361,6 @@ public class Manager : Singleton<Manager>
         {
             SetEmptyTicket(page.cards);
         }
-        page.name = MyTicketsName;
         if (!pages.Contains(page))
         {
             pages.Add(page);
@@ -373,15 +375,15 @@ public class Manager : Singleton<Manager>
     }
     void SetMyRewardsPage()
     {
-        Page page = pages.Find(p => p.name == MyRewardsName);
+        Page page = pages.Find(p => p.id == MyRewardsPageId);
         if (page == null)
         {
             page = new Page();
-            page.name = MyRewardsName;
-            page.cards = new List<Card>();
         }
-        page.cards.Clear();
-        page.cards.Add(BackPageCard("ของขวัญ"));
+        page.id = MyRewardsPageId;
+        page.name = MyRewardsPageName;
+        page.cards = new List<Card>();
+        page.cards.Add(BackPageCard(page.name));
         if (rewards != null)
         {
             if (rewards.Count > 0)
@@ -405,7 +407,6 @@ public class Manager : Singleton<Manager>
         {
             SetEmptyReward(page.cards);
         }
-        page.name = MyRewardsName;
         if (!pages.Contains(page))
         {
             pages.Add(page);
@@ -420,11 +421,12 @@ public class Manager : Singleton<Manager>
     }
     Card BackPageCard(string pageName)
     {
-            Card card = new Card();
-            card.name = pageName;
-            card.viewType = CardType.Header;
-            card.nextPage = "Back";
-            return card;
+        Card card = new Card();
+        card.name = pageName;
+        card.viewType = CardType.Header;
+        //card.nextPage = "Back";
+        card.nextPage = string.Empty;
+        return card;
     }
     public OnSyncCallback OnError;
     public void Error(string e)

@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using EnhancedUI.EnhancedScroller;
 using EnhancedUI;
 using System.Collections;
@@ -16,8 +17,11 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
     private CanvasGroup homeCanvasGroup;
     private EnhancedScroller scroller;
     public HomeScrollCallView CellViewPrefab;
-    private Page currentPage;
+    [SerializeField]
+    private PageHeader header;
+    public Page currentPage;
     private SmallList<view> viewStack = new SmallList<view>();
+    
     //private SmallList<Card> card;
     void Awake()
     {
@@ -47,9 +51,10 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
     {
         if (nextPage != null)
         {
-            Debug.Log("Load page : " + nextPage.name);
+            Debug.Log("Load page : " + nextPage.name + " : " + viewStack.Count);
             currentPage = nextPage;
             scroller.ReloadData();
+            header.SetData(scroller.ScrollRect, currentPage.name, viewStack.Count == 1, viewStack.Count > 1, () => { BackPage(); });
         }
     }
     void NextPage(Page nextPage)
@@ -58,11 +63,11 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
         {
             viewStack.data[viewStack.Count - 1].viewPos = scroller.ScrollPosition;
         }
-        LoadPage(nextPage);
         view v = new view();
         v.page = nextPage;
         v.viewPos = 0;
         viewStack.Add(v);
+        LoadPage(nextPage);
         scroller.Delegate = this;
         scroller.cellViewVisibilityChanged = CellViewVisibilityChanged;
     }
@@ -119,7 +124,7 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
         }
         else if (!string.IsNullOrEmpty(pageName))
         {
-            Manager.Instance.GetPageByName(pageName, NextPage);
+            Manager.Instance.GetPageById(pageName, NextPage);
             ChangePageEffect();
         }
     }
@@ -129,6 +134,7 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
         round.transform.SetParent(FindObjectOfType<Canvas>().transform, false);
         round.transform.SetSiblingIndex(homeCanvasGroup.transform.GetSiblingIndex() + 1);
         round.SetItem(r, isItem,tex);
+        Popup(round, r.name);
     }
     void ShowTicketDesc(string prefabName, Ticket ticket,Item round, Texture tex)
     {
@@ -136,6 +142,7 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
         popup.transform.SetParent(FindObjectOfType<Canvas>().transform, false);
         popup.transform.SetSiblingIndex(homeCanvasGroup.transform.GetSiblingIndex() + 1);
         popup.SetTicket(round ,ticket, tex);
+        Popup(popup, round.name);
     }
     void ShowRewardDesc(string prefabName, Reward reward, Item item,Texture tex)
     {
@@ -143,10 +150,33 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
         popup.transform.SetParent(FindObjectOfType<Canvas>().transform, false);
         popup.transform.SetSiblingIndex(homeCanvasGroup.transform.GetSiblingIndex() + 1);
         popup.SetReward(item, reward, tex);
+        Popup(popup, item.name);
+    }
+    void Popup(Popup popup, string head)
+    {
+        header.SetData(popup.ContentScroll, head, false, true, () =>
+        {
+            popup.Back();
+        });
+        popup.OnBack = () => {
+            BackPage();
+        };
+        Page blank = new Page();
+        blank.cards = new System.Collections.Generic.List<Card>();
+        if (viewStack.Count > 0)
+        {
+            viewStack.data[viewStack.Count - 1].viewPos = scroller.ScrollPosition;
+        }
+        currentPage = blank;
+        scroller.ReloadData();
+        view v = new view();
+        v.page = blank;
+        v.viewPos = 0;
+        viewStack.Add(v);
     }
     void BackPage()
     {
-        if (viewStack.Count > 0 && !LeanTween.isTweening(gameObject))
+        if (viewStack.Count > 1 && !LeanTween.isTweening(gameObject))
         {
             viewStack.RemoveEnd();
             LoadPage(viewStack.Last().page);
@@ -157,6 +187,7 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
     void ChangePageEffect()
     {
         homeCanvasGroup.interactable = false;
+        header.Show();
         LeanTween.alphaCanvas(homeCanvasGroup, 0.5f, 0.15f).setLoopPingPong(1).setOnComplete(() =>
         {
             homeCanvasGroup.interactable = true;
@@ -177,7 +208,7 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
                 height = 200;
                 break;
             case CardType.Header:
-                height = 220;
+                height = 170;
                 break;
             default:
                 goto case CardType.NameOnlyLeft;
@@ -188,9 +219,13 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
     {
         HomeScrollCallView cellView = scroller.GetCellView(CellViewPrefab) as HomeScrollCallView;
             cellView.OnClick.RemoveAllListeners();
-            cellView.OnClick.AddListener(() => {
+        if (!string.IsNullOrEmpty(currentPage.cards[dataIndex].nextPage))
+        {
+            cellView.OnClick.AddListener(() =>
+            {
                 NextPage(currentPage.cards[dataIndex].nextPage, cellView.Photo);
             });
+        }
         return cellView;
     }
     private void CellViewVisibilityChanged(EnhancedScrollerCellView cellView)

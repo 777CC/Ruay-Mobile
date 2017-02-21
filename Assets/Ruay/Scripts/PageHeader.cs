@@ -4,28 +4,61 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-[RequireComponent(typeof(ScrollRect))]
+[RequireComponent(typeof(RectTransform))]
 public class PageHeader : MonoBehaviour
 {
-    public RectTransform contentRect;
-    public RectTransform me;
+    private ScrollRect contentRect;
+    private RectTransform me;
+    [SerializeField]
+    private Text headerText;
+    [SerializeField]
+    private Text satangText;
+    [SerializeField]
+    private Button back;
     public Vector2 startPos;
     private float startY;
-    public float oldmeY;
-    public float oldcontentY;
+    private float oldmeY;
+    private float oldcontentY;
     private void Start()
     {
+        me = GetComponent<RectTransform>();
         startPos = me.anchoredPosition;
         startY = me.position.y;
         oldmeY = me.position.y;
         oldcontentY = oldmeY;
-        contentRect = GetComponent<ScrollRect>().content;
-        Debug.Log(me.rect);
-        GetComponent<ScrollRect>().onValueChanged.AddListener((pos)=> {
-            Debug.Log(me.anchoredPosition);
-            if (contentRect.position.y >= startY)
+    }
+    public void Show()
+    {
+        me.anchoredPosition = startPos;
+        oldmeY = me.position.y;
+        oldcontentY = contentRect.content.position.y;
+    }
+    public void SetData(ScrollRect scroll,string header,bool isShowSatang,bool isShowBack,UnityEngine.Events.UnityAction onBack)
+    {
+        if(isShowSatang)
+        {
+            satangText.text = Manager.Instance.satang + " ส.";
+        }
+        else
+        {
+            satangText.text = string.Empty;
+        }
+        headerText.text = header;
+        if (isShowBack)
+        {
+            back.gameObject.SetActive(true);
+            back.onClick.RemoveAllListeners();
+            back.onClick.AddListener(onBack);
+        }
+        else
+        {
+            back.gameObject.SetActive(false);
+        }
+        contentRect = scroll;
+        contentRect.onValueChanged.AddListener((pos)=> {
+            if (contentRect.content.position.y >= startY)
             {
-                me.SetPositionAndRotation(new Vector3(me.position.x, oldmeY - (oldcontentY - contentRect.position.y)), Quaternion.identity);
+                me.SetPositionAndRotation(new Vector3(me.position.x, oldmeY - (oldcontentY - contentRect.content.position.y)), Quaternion.identity);
             }
             else
             {
@@ -40,7 +73,7 @@ public class PageHeader : MonoBehaviour
                 me.anchoredPosition = new Vector2(startPos.x, me.rect.height);
             }
             oldmeY = me.position.y;
-            oldcontentY = contentRect.position.y;
+            oldcontentY = contentRect.content.position.y;
         });
     }
 }

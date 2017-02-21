@@ -69,9 +69,11 @@ public class HomeScrollCallView : EnhancedScrollerCellView{
                 SetView(false, data.photo, true, TextAnchor.MiddleLeft);
                 break;
             case CardType.Header:
-                SetView(false, data.photo, false, TextAnchor.MiddleLeft);
-                HeadText.text = data.name;
-                NameText.text = "<";
+                //SetView(false, data.photo, false, TextAnchor.MiddleLeft);
+                //HeadText.text = data.name;
+                //NameText.text = "<";
+                SetView(false, string.Empty, false, TextAnchor.MiddleLeft);
+                NameText.text = string.Empty;
                 break;
             default:
                 break;
