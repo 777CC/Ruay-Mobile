@@ -60,7 +60,8 @@ public class LoginPage : MonoBehaviour {
             Login();
         }
 #else
-                 statusMessage.text = "Not Facebook.";
+        statusMessage.text = "Not Facebook.";
+        Debug.Log("Not Facebook.");
 #endif
     }
     void Login()

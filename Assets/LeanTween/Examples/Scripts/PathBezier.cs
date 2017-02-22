@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using DentedPixel;
 
 namespace DentedPixel.LTExamples{
 

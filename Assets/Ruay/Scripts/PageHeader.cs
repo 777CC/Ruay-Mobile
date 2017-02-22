@@ -58,7 +58,8 @@ public class PageHeader : MonoBehaviour
         contentRect.onValueChanged.AddListener((pos)=> {
             if (contentRect.content.position.y >= startY)
             {
-                me.SetPositionAndRotation(new Vector3(me.position.x, oldmeY - (oldcontentY - contentRect.content.position.y)), Quaternion.identity);
+                //me.SetPositionAndRotation(new Vector3(me.position.x, oldmeY - (oldcontentY - contentRect.content.position.y)), Quaternion.identity);
+                me.position = new Vector2(me.position.x, oldmeY - (oldcontentY - contentRect.content.position.y));
             }
             else
             {

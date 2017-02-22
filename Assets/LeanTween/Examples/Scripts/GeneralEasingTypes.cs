@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Reflection;
+using DentedPixel;
 
 public class GeneralEasingTypes : MonoBehaviour {
 
@@ -51,7 +52,7 @@ public class GeneralEasingTypes : MonoBehaviour {
 			}
 
             if(easeName.IndexOf("EasePunch")>=0){
-                lt.setScale(2f);
+				lt.setScale(1f);
             }
 		}
 

@@ -1,4 +1,5 @@
-﻿using System;
+//namespace DentedPixel{
+using System;
 using UnityEngine;
 
 /**
@@ -66,7 +67,7 @@ public class LTDescr
 	internal Vector3 diff;
 	internal Vector3 diffDiv2;
 	public TweenAction type;
-	public LeanTweenType tweenType;
+	private LeanTweenType easeType;
 	public LeanTweenType loopType;
 
 	public bool hasUpdateCallback;
@@ -84,6 +85,7 @@ public class LTDescr
 	public RectTransform rectTransform;
 	public UnityEngine.UI.Text uiText;
 	public UnityEngine.UI.Image uiImage;
+	public UnityEngine.UI.RawImage rawImage;
 	public UnityEngine.Sprite[] sprites;
 	#endif
 
@@ -92,7 +94,7 @@ public class LTDescr
 	private static uint global_counter = 0;
 
 	public override string ToString(){
-		return (trans!=null ? "name:"+trans.gameObject.name : "gameObject:null")+" toggle:"+toggle+" passed:"+passed+" time:"+time+" delay:"+delay+" direction:"+direction+" from:"+from+" to:"+to+" diff:"+diff+" type:"+type+" ease:"+tweenType+" useEstimatedTime:"+useEstimatedTime+" id:"+id+" hasInitiliazed:"+hasInitiliazed;
+		return (trans!=null ? "name:"+trans.gameObject.name : "gameObject:null")+" toggle:"+toggle+" passed:"+passed+" time:"+time+" delay:"+delay+" direction:"+direction+" from:"+from+" to:"+to+" diff:"+diff+" type:"+type+" ease:"+easeType+" useEstimatedTime:"+useEstimatedTime+" id:"+id+" hasInitiliazed:"+hasInitiliazed;
 	}
 
 	public LTDescr(){
@@ -141,13 +143,14 @@ public class LTDescr
 		this.trans = null;
 		this.passed = this.delay = this.lastVal = 0.0f;
 		this.hasUpdateCallback = this.useEstimatedTime = this.useFrames = this.hasInitiliazed = this.onCompleteOnRepeat = this.destroyOnComplete = this.onCompleteOnStart = this.useManualTime = this.hasExtraOnCompletes = false;
-		this.tweenType = LeanTweenType.linear;
+		this.easeType = LeanTweenType.linear;
 		this.loopType = LeanTweenType.once;
 		this.loopCount = 0;
         this.direction = this.directionLast = this.overshoot = this.scale = 1.0f;
 		this.period = 0.3f;
 		this.speed = -1f;
 		this.easeMethod = this.easeLinear;
+		this.from = this.to = Vector3.zero;
 		this._optional.reset();
 
 		global_counter++;
@@ -589,13 +592,25 @@ public class LTDescr
 		this.type = TweenAction.CANVAS_ALPHA;
 		this.initInternal = ()=>{
 			this.uiImage = trans.gameObject.GetComponent<UnityEngine.UI.Image>();
-			this.fromInternal.x = this.uiImage != null ? this.uiImage.color.a : 1f;
+			if(this.uiImage!=null){
+				this.fromInternal.x = this.uiImage.color.a;
+			}else{
+				this.rawImage = trans.gameObject.GetComponent<UnityEngine.UI.RawImage>();
+				if(this.rawImage != null){
+					this.fromInternal.x = this.rawImage.color.a;
+				}else{
+					this.fromInternal.x = 1f;
+				}
+			}
+
 		};
 		this.easeInternal = ()=>{
 			newVect = easeMethod();
 			val = newVect.x;
 			if(this.uiImage!=null){
 				Color c = this.uiImage.color; c.a = val; this.uiImage.color = c;
+			}else if(this.rawImage!=null){
+				Color c = this.rawImage.color; c.a = val; this.rawImage.color = c;
 			}
 			if(this.useRecursion){
 				alphaRecursive( this.rectTransform, val, 0 );
@@ -616,17 +631,24 @@ public class LTDescr
 		this.type = TweenAction.CANVAS_COLOR;
 		this.initInternal = ()=>{
 			this.uiImage = trans.gameObject.GetComponent<UnityEngine.UI.Image>();
-			if(this.uiImage != null){
-				this.setFromColor( this.uiImage.color );
+			if(this.uiImage==null){
+				this.rawImage = trans.gameObject.GetComponent<UnityEngine.UI.RawImage>();
+				this.setFromColor( this.rawImage!=null ? this.rawImage.color : Color.white );
 			}else{
-				this.setFromColor( Color.white );
+				this.setFromColor( this.uiImage.color );
 			}
+
 		};
 		this.easeInternal = ()=>{
 			newVect = easeMethod();
 			val = newVect.x;
 			Color toColor = tweenColor(this, val);
-			this.uiImage.color = toColor;
+			if(this.uiImage!=null){
+				this.uiImage.color = toColor;
+			}else if(this.rawImage!=null){
+				this.rawImage.color = toColor;
+			}
+
 			if (dt!=0f && this._optional.onUpdateColor != null)
 				this._optional.onUpdateColor(toColor);
 
@@ -868,6 +890,9 @@ public class LTDescr
 
 		usesNormalDt = !(useEstimatedTime || useManualTime || useFrames); // only set this to true if it uses non of the other timing modes
 
+		if (useFrames)
+			this.optional.initFrameCount = Time.frameCount;
+
 		if (this.time <= 0f) // avoid dividing by zero
 			this.time = Mathf.Epsilon;
 
@@ -917,16 +942,18 @@ public class LTDescr
 	public bool updateInternal(){
 
 		float directionLocal = this.direction;
-		if(usesNormalDt){
+		if(this.usesNormalDt){
 			dt = LeanTween.dtActual;
 		}else if( this.useEstimatedTime ){
 			dt = LeanTween.dtEstimated;
 		}else if( this.useFrames ){
-			dt = 1;
+			dt = this.optional.initFrameCount==0 ? 0 : 1;
+			this.optional.initFrameCount = Time.frameCount;
 		}else if( this.useManualTime ){
 			dt = LeanTween.dtManual;
 		}
 
+//		Debug.Log ("tween:" + this+ " dt:"+dt);
 		if(this.delay<=0f && directionLocal!=0f){
 			if(trans==null)
 				return true;	
@@ -1030,11 +1057,14 @@ public class LTDescr
 	private static void alphaRecursive( RectTransform rectTransform, float val, int recursiveLevel = 0){
 		if(rectTransform.childCount>0){
 			foreach (RectTransform child in rectTransform) {
-				UnityEngine.UI.Image uiImage = child.GetComponent<UnityEngine.UI.Image>();
-				if(uiImage!=null){
-					Color c = uiImage.color;
-					c.a = val;
-					uiImage.color = c;
+				UnityEngine.UI.MaskableGraphic uiImage = child.GetComponent<UnityEngine.UI.Image>();
+				if (uiImage != null) {
+					Color c = uiImage.color; c.a = val; uiImage.color = c;
+				} else {
+					uiImage = child.GetComponent<UnityEngine.UI.RawImage>();
+					if (uiImage != null) {
+						Color c = uiImage.color; c.a = val; uiImage.color = c;
+					}
 				}
 
 				alphaRecursive(child, val, recursiveLevel + 1);
@@ -1068,9 +1098,13 @@ public class LTDescr
 
 		if(rectTransform.childCount>0){
 			foreach (RectTransform child in rectTransform) {
-				UnityEngine.UI.Image uiImage = child.GetComponent<UnityEngine.UI.Image>();
-				if(uiImage!=null){
+				UnityEngine.UI.MaskableGraphic uiImage = child.GetComponent<UnityEngine.UI.Image>();
+				if (uiImage != null) {
 					uiImage.color = toColor;
+				} else {
+					uiImage = child.GetComponent<UnityEngine.UI.RawImage>();
+					if (uiImage != null)
+						uiImage.color = toColor;
 				}
 				colorRecursive(child, toColor);
 			}
@@ -1152,11 +1186,7 @@ public class LTDescr
 	* LeanTween.moveX(gameObject, 5f, 2.0f ).setDelay( 1.5f );
 	*/
 	public LTDescr setDelay( float delay ){
-		if(this.useEstimatedTime){
-			this.delay = delay;
-		}else{
-			this.delay = delay;//*Time.timeScale;
-		}
+		this.delay = delay;
 
 		return this;
 	}
@@ -1251,79 +1281,78 @@ public class LTDescr
 		return this;
 	}
 
-	public LTDescr setEaseLinear(){ this.tweenType = LeanTweenType.linear; this.easeMethod = this.easeLinear; return this; }
+	public LTDescr setEaseLinear(){ this.easeType = LeanTweenType.linear; this.easeMethod = this.easeLinear; return this; }
 
-	public LTDescr setEaseSpring(){ this.tweenType = LeanTweenType.easeSpring; this.easeMethod = this.easeSpring; return this; }
+	public LTDescr setEaseSpring(){ this.easeType = LeanTweenType.easeSpring; this.easeMethod = this.easeSpring; return this; }
 
-	public LTDescr setEaseInQuad(){ this.tweenType = LeanTweenType.easeInQuad; this.easeMethod = this.easeInQuad; return this; }
+	public LTDescr setEaseInQuad(){ this.easeType = LeanTweenType.easeInQuad; this.easeMethod = this.easeInQuad; return this; }
 
-	public LTDescr setEaseOutQuad(){ this.tweenType = LeanTweenType.easeOutQuad; this.easeMethod = this.easeOutQuad; return this; }
+	public LTDescr setEaseOutQuad(){ this.easeType = LeanTweenType.easeOutQuad; this.easeMethod = this.easeOutQuad; return this; }
 
-	public LTDescr setEaseInOutQuad(){ this.tweenType = LeanTweenType.easeInOutQuad; this.easeMethod = this.easeInOutQuad; return this;}
+	public LTDescr setEaseInOutQuad(){ this.easeType = LeanTweenType.easeInOutQuad; this.easeMethod = this.easeInOutQuad; return this;}
 
-	public LTDescr setEaseInCubic(){ this.tweenType = LeanTweenType.easeInCubic; this.easeMethod = this.easeInCubic; return this; }
+	public LTDescr setEaseInCubic(){ this.easeType = LeanTweenType.easeInCubic; this.easeMethod = this.easeInCubic; return this; }
 
-	public LTDescr setEaseOutCubic(){ this.tweenType = LeanTweenType.easeOutCubic; this.easeMethod = this.easeOutCubic; return this; }
+	public LTDescr setEaseOutCubic(){ this.easeType = LeanTweenType.easeOutCubic; this.easeMethod = this.easeOutCubic; return this; }
 
-	public LTDescr setEaseInOutCubic(){ this.tweenType = LeanTweenType.easeInOutCubic; this.easeMethod = this.easeInOutCubic; return this; }
+	public LTDescr setEaseInOutCubic(){ this.easeType = LeanTweenType.easeInOutCubic; this.easeMethod = this.easeInOutCubic; return this; }
 
-	public LTDescr setEaseInQuart(){ this.tweenType = LeanTweenType.easeInQuart; this.easeMethod = this.easeInQuart; return this; }
+	public LTDescr setEaseInQuart(){ this.easeType = LeanTweenType.easeInQuart; this.easeMethod = this.easeInQuart; return this; }
 
-	public LTDescr setEaseOutQuart(){ this.tweenType = LeanTweenType.easeOutQuart; this.easeMethod = this.easeOutQuart; return this; }
+	public LTDescr setEaseOutQuart(){ this.easeType = LeanTweenType.easeOutQuart; this.easeMethod = this.easeOutQuart; return this; }
 
-	public LTDescr setEaseInOutQuart(){ this.tweenType = LeanTweenType.easeInOutQuart; this.easeMethod = this.easeInOutQuart; return this; }
+	public LTDescr setEaseInOutQuart(){ this.easeType = LeanTweenType.easeInOutQuart; this.easeMethod = this.easeInOutQuart; return this; }
 
-	public LTDescr setEaseInQuint(){ this.tweenType = LeanTweenType.easeInQuint; this.easeMethod = this.easeInQuint; return this; }
+	public LTDescr setEaseInQuint(){ this.easeType = LeanTweenType.easeInQuint; this.easeMethod = this.easeInQuint; return this; }
 
-	public LTDescr setEaseOutQuint(){ this.tweenType = LeanTweenType.easeOutQuint; this.easeMethod = this.easeOutQuint; return this; }
+	public LTDescr setEaseOutQuint(){ this.easeType = LeanTweenType.easeOutQuint; this.easeMethod = this.easeOutQuint; return this; }
 
-	public LTDescr setEaseInOutQuint(){ this.tweenType = LeanTweenType.easeInOutQuint; this.easeMethod = this.easeInOutQuint; return this; }
+	public LTDescr setEaseInOutQuint(){ this.easeType = LeanTweenType.easeInOutQuint; this.easeMethod = this.easeInOutQuint; return this; }
 
-	public LTDescr setEaseInSine(){ this.tweenType = LeanTweenType.easeInSine; this.easeMethod = this.easeInSine; return this; }
+	public LTDescr setEaseInSine(){ this.easeType = LeanTweenType.easeInSine; this.easeMethod = this.easeInSine; return this; }
 
-	public LTDescr setEaseOutSine(){ this.tweenType = LeanTweenType.easeOutSine; this.easeMethod = this.easeOutSine; return this; }
+	public LTDescr setEaseOutSine(){ this.easeType = LeanTweenType.easeOutSine; this.easeMethod = this.easeOutSine; return this; }
 
-	public LTDescr setEaseInOutSine(){ this.tweenType = LeanTweenType.easeInOutSine; this.easeMethod = this.easeInOutSine; return this; }
+	public LTDescr setEaseInOutSine(){ this.easeType = LeanTweenType.easeInOutSine; this.easeMethod = this.easeInOutSine; return this; }
 
-	public LTDescr setEaseInExpo(){ this.tweenType = LeanTweenType.easeInExpo; this.easeMethod = this.easeInExpo; return this; }
+	public LTDescr setEaseInExpo(){ this.easeType = LeanTweenType.easeInExpo; this.easeMethod = this.easeInExpo; return this; }
 
-	public LTDescr setEaseOutExpo(){ this.tweenType = LeanTweenType.easeOutExpo; this.easeMethod = this.easeOutExpo; return this; }
+	public LTDescr setEaseOutExpo(){ this.easeType = LeanTweenType.easeOutExpo; this.easeMethod = this.easeOutExpo; return this; }
 
-	public LTDescr setEaseInOutExpo(){ this.tweenType = LeanTweenType.easeInOutExpo; this.easeMethod = this.easeInOutExpo; return this; }
+	public LTDescr setEaseInOutExpo(){ this.easeType = LeanTweenType.easeInOutExpo; this.easeMethod = this.easeInOutExpo; return this; }
 
-	public LTDescr setEaseInCirc(){ this.tweenType = LeanTweenType.easeInCirc; this.easeMethod = this.easeInCirc; return this; }
+	public LTDescr setEaseInCirc(){ this.easeType = LeanTweenType.easeInCirc; this.easeMethod = this.easeInCirc; return this; }
 
-	public LTDescr setEaseOutCirc(){ this.tweenType = LeanTweenType.easeOutCirc; this.easeMethod = this.easeOutCirc; return this; }
+	public LTDescr setEaseOutCirc(){ this.easeType = LeanTweenType.easeOutCirc; this.easeMethod = this.easeOutCirc; return this; }
 
-	public LTDescr setEaseInOutCirc(){ this.tweenType = LeanTweenType.easeInOutCirc; this.easeMethod = this.easeInOutCirc; return this; }
+	public LTDescr setEaseInOutCirc(){ this.easeType = LeanTweenType.easeInOutCirc; this.easeMethod = this.easeInOutCirc; return this; }
 
-	public LTDescr setEaseInBounce(){ this.tweenType = LeanTweenType.easeInBounce; this.easeMethod = this.easeInBounce; return this; }
+	public LTDescr setEaseInBounce(){ this.easeType = LeanTweenType.easeInBounce; this.easeMethod = this.easeInBounce; return this; }
 
-	public LTDescr setEaseOutBounce(){ this.tweenType = LeanTweenType.easeOutBounce; this.easeMethod = this.easeOutBounce; return this; }
+	public LTDescr setEaseOutBounce(){ this.easeType = LeanTweenType.easeOutBounce; this.easeMethod = this.easeOutBounce; return this; }
 
-	public LTDescr setEaseInOutBounce(){ this.tweenType = LeanTweenType.easeInOutBounce; this.easeMethod = this.easeInOutBounce; return this; }
+	public LTDescr setEaseInOutBounce(){ this.easeType = LeanTweenType.easeInOutBounce; this.easeMethod = this.easeInOutBounce; return this; }
 
-	public LTDescr setEaseInBack(){ this.tweenType = LeanTweenType.easeInBack; this.easeMethod = this.easeInBack; return this; }
+	public LTDescr setEaseInBack(){ this.easeType = LeanTweenType.easeInBack; this.easeMethod = this.easeInBack; return this; }
 
-	public LTDescr setEaseOutBack(){ this.tweenType = LeanTweenType.easeOutBack; this.easeMethod = this.easeOutBack; return this; }
+	public LTDescr setEaseOutBack(){ this.easeType = LeanTweenType.easeOutBack; this.easeMethod = this.easeOutBack; return this; }
 
-	public LTDescr setEaseInOutBack(){ this.tweenType = LeanTweenType.easeInOutBack; this.easeMethod = this.easeInOutBack; return this; }
+	public LTDescr setEaseInOutBack(){ this.easeType = LeanTweenType.easeInOutBack; this.easeMethod = this.easeInOutBack; return this; }
 
-	public LTDescr setEaseInElastic(){ this.tweenType = LeanTweenType.easeInElastic; this.easeMethod = this.easeInElastic; return this; }
+	public LTDescr setEaseInElastic(){ this.easeType = LeanTweenType.easeInElastic; this.easeMethod = this.easeInElastic; return this; }
 
-	public LTDescr setEaseOutElastic(){ this.tweenType = LeanTweenType.easeOutElastic; this.easeMethod = this.easeOutElastic; return this; }
+	public LTDescr setEaseOutElastic(){ this.easeType = LeanTweenType.easeOutElastic; this.easeMethod = this.easeOutElastic; return this; }
 
-	public LTDescr setEaseInOutElastic(){ this.tweenType = LeanTweenType.easeInOutElastic; this.easeMethod = this.easeInOutElastic; return this; }
+	public LTDescr setEaseInOutElastic(){ this.easeType = LeanTweenType.easeInOutElastic; this.easeMethod = this.easeInOutElastic; return this; }
 
 	public LTDescr setEasePunch(){ this._optional.animationCurve = LeanTween.punch; this.toInternal.x = this.from.x + this.to.x; this.easeMethod = this.tweenOnCurve; return this; }
 
 	public LTDescr setEaseShake(){ this._optional.animationCurve = LeanTween.shake; this.toInternal.x = this.from.x + this.to.x; this.easeMethod = this.tweenOnCurve; return this; }
 
 	private Vector3 tweenOnCurve(){
-        float r = this._optional.animationCurve.Evaluate(ratioPassed) * this.scale;
-		return	new Vector3(this.from.x + (this.diff.x) * r,
-			this.from.y + (this.diff.y) * r,
-			this.from.z + (this.diff.z) * r );
+		return	new Vector3(this.from.x + (this.diff.x) * this._optional.animationCurve.Evaluate(ratioPassed),
+			this.from.y + (this.diff.y) * this._optional.animationCurve.Evaluate(ratioPassed),
+			this.from.z + (this.diff.z) * this._optional.animationCurve.Evaluate(ratioPassed) );
 	}
 
 	// Vector3 Ease Methods
@@ -1401,8 +1430,8 @@ public class LTDescr
 			return new Vector3(this.diffDiv2.x * val + this.from.x, this.diffDiv2.y * val + this.from.y, this.diffDiv2.z * val + this.from.z);
 		}
 		val -= 2f;
-		val = (val * val * val * val - 2f);
-		return new Vector3(-this.diffDiv2.x * val + this.from.x, -this.diffDiv2.x * val + this.from.x, -this.diffDiv2.x * val + this.from.x);
+//		val = (val * val * val * val - 2f);
+		return -this.diffDiv2 * (val * val * val * val - 2f) + this.from;
 	}
 
 	private Vector3 easeInQuint(){
@@ -1624,7 +1653,7 @@ public class LTDescr
 	public LTDescr setEase( AnimationCurve easeCurve ){
 		this._optional.animationCurve = easeCurve;
 		this.easeMethod = this.tweenOnCurve;
-		this.tweenType = LeanTweenType.animationCurve;
+		this.easeType = LeanTweenType.animationCurve;
 		return this;
 	}
 
@@ -1636,7 +1665,7 @@ public class LTDescr
 	* @example
 	* LTDescr descr = LeanTween.move( cube, Vector3.up, new Vector3(1f,3f,0f), 1.0f ).setEase( LeanTweenType.easeInOutBounce );<br>
 	* // Later your want to change your destination or your destiation is constantly moving<br>
-	* descr.setTo( new Vector3(5f,10f,3f); );<br>
+	* descr.setTo( new Vector3(5f,10f,3f) );<br>
 	*/
 	public LTDescr setTo( Vector3 to ){
 		if(this.hasInitiliazed){
@@ -1654,6 +1683,14 @@ public class LTDescr
 		return this;
 	}
 
+	/**
+	* Set the beginning of the tween
+	* @method setFrom
+	* @param {Vector3} from:Vector3 the point you would like the tween to start at
+	* @return {LTDescr} LTDescr an object that distinguishes the tween
+	* @example
+	* LTDescr descr = LeanTween.move( cube, Vector3.up, new Vector3(1f,3f,0f), 1.0f ).setFrom( new Vector3(5f,10f,3f) );<br>
+	*/
 	public LTDescr setFrom( Vector3 from ){
 		if(this.trans){
 			this.init();
@@ -1744,6 +1781,7 @@ public class LTDescr
 
 	public LTDescr setUseEstimatedTime( bool useEstimatedTime ){
 		this.useEstimatedTime = useEstimatedTime;
+		this.usesNormalDt = false;
 		return this;
 	}
 
@@ -1757,6 +1795,7 @@ public class LTDescr
 	*/
 	public LTDescr setIgnoreTimeScale( bool useUnScaledTime ){
 		this.useEstimatedTime = useUnScaledTime;
+		this.usesNormalDt = false;
 		return this;
 	}
 
@@ -1770,11 +1809,13 @@ public class LTDescr
 	*/
 	public LTDescr setUseFrames( bool useFrames ){
 		this.useFrames = useFrames;
+		this.usesNormalDt = false;
 		return this;
 	}
 
 	public LTDescr setUseManualTime( bool useManualTime ){
 		this.useManualTime = useManualTime;
+		this.usesNormalDt = false;
 		return this;
 	}
 
@@ -2202,3 +2243,4 @@ public class LTDescr
 	}
 }
 
+//}

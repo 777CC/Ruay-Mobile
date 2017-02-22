@@ -10,6 +10,14 @@ Install
 -Set android minimun API Level same as facebook used.[in AndroidManifest.xml ->  <uses-sdk android:minSdkVersion="15" />]
 -Add detail to developer facebook web.
 
+Plugin
+-AWSSDK Coginto,Lambda,SNS
+-EnhancedScroller v2
+-FacebookSDK
+-LeanTween
+-Log Viewer
+-Google Mobile Ad
+
 AWS Setting
 -Set imagefolder's S3 in config.json in manualresize node
 -create lamdba'zip and upload to s3

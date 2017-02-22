@@ -1,3 +1,5 @@
+import DentedPixel;
+
 public var grumpy:Texture2D;
 public var beauty:Texture2D;
 

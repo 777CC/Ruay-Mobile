@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+//namespace DentedPixel{
+using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -13,6 +14,7 @@ public class LTDescrOptional  {
 	public LTBezierPath path { get; set; }
 	public LTSpline spline { get; set; }
 	public AnimationCurve animationCurve;
+	public int initFrameCount;
 
 	public LTRect ltRect { get; set; } // maybe get rid of this eventually
 
@@ -62,6 +64,7 @@ public class LTDescrOptional  {
 		this.onStart = null;
 
 		this.point = Vector3.zero;
+		this.initFrameCount = 0;
 	}
 
 	public void callOnUpdate( float val, float ratioPassed){
@@ -81,3 +84,5 @@ public class LTDescrOptional  {
 		}
 	}
 }
+
+//}
