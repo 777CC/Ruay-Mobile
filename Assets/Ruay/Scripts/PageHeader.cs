@@ -19,9 +19,12 @@ public class PageHeader : MonoBehaviour
     private float startY;
     private float oldmeY;
     private float oldcontentY;
-    private void Start()
+    private void Awake()
     {
         me = GetComponent<RectTransform>();
+    }
+    private void Start()
+    {
         startPos = me.anchoredPosition;
         startY = me.position.y;
         oldmeY = me.position.y;
@@ -31,7 +34,10 @@ public class PageHeader : MonoBehaviour
     {
         me.anchoredPosition = startPos;
         oldmeY = me.position.y;
-        oldcontentY = contentRect.content.position.y;
+        if (contentRect != null)
+        {
+            oldcontentY = contentRect.content.position.y;
+        }
     }
     public void SetData(ScrollRect scroll,string header,bool isShowSatang,bool isShowBack,UnityEngine.Events.UnityAction onBack)
     {

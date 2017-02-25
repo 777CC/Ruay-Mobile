@@ -8,6 +8,21 @@ using System.Threading;
 [RequireComponent(typeof(Button))]
 public class HomeScrollCallView : EnhancedScrollerCellView{
     [SerializeField]
+    private RectTransform rect;
+    private Canvas canvas;
+    public Rect pos
+    {
+        get
+        {
+            if(canvas == null)
+            {
+                canvas = GetComponentInParent<Canvas>();
+            }
+
+            return rect.GetScreenRect(canvas);// RectTransformUtility.WorldToScreenPoint(Camera.main, transform.position);
+        }
+    }
+    [SerializeField]
     private Text HeadText;
     [SerializeField]
     private Text NameText;
@@ -75,6 +90,10 @@ public class HomeScrollCallView : EnhancedScrollerCellView{
                 SetView(false, string.Empty, false, TextAnchor.MiddleLeft);
                 NameText.text = string.Empty;
                 break;
+            case CardType.Ad:
+                SetView(false, string.Empty, false, TextAnchor.MiddleLeft);
+                NameText.text = string.Empty;
+                break;
             default:
                 break;
         }
@@ -128,7 +147,7 @@ public class HomeScrollCallView : EnhancedScrollerCellView{
         
         if (!File.Exists(ioPath))
         {
-            Debug.Log("load web :" + url);
+            //Debug.Log("load web :" + url);
             WWW www = new WWW(url);
             yield return www;
             if (string.IsNullOrEmpty(www.error))

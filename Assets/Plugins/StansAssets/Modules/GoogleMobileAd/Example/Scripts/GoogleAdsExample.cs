@@ -39,9 +39,11 @@ public class GoogleAdsExample : MonoBehaviour {
 	
 		
 		//Optional, add data for better ad targeting
-		GoogleMobileAd.SetGender(GoogleGender.Male);
-		GoogleMobileAd.AddKeyword("game");
-		GoogleMobileAd.SetBirthday(1989, AndroidMonth.MARCH, 18);
+		GoogleMobileAd.SetGender(GoogleGender.Female);
+		GoogleMobileAd.AddKeyword("football");
+        GoogleMobileAd.AddKeyword("run");
+        GoogleMobileAd.AddKeyword("photography");
+        GoogleMobileAd.SetBirthday(1989, AndroidMonth.MARCH, 18);
 		GoogleMobileAd.TagForChildDirectedTreatment(false);
 		
 		//Causes a device to receive test ads. The deviceId can be obtained by viewing the device log output after creating a new ad
@@ -162,8 +164,7 @@ public class GoogleAdsExample : MonoBehaviour {
 	}
 
 	public void SmartBanner() {
-		banner2 =GoogleMobileAd.CreateAdBanner(TextAnchor.LowerLeft, GADBannerSize.SMART_BANNER);
-		
+		banner2 =GoogleMobileAd.CreateAdBanner(TextAnchor.LowerLeft, GADBannerSize.MEDIUM_RECTANGLE);
 		//listening for banner to load example using C# actions:
 		banner2.OnLoadedAction += OnBannerLoadedAction;
 

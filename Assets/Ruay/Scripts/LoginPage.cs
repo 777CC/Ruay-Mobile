@@ -4,6 +4,8 @@ using UnityEngine.SceneManagement;
 using System.Collections;
 using System.Collections.Generic;
 using Facebook.Unity;
+//using UnityEngine.Advertisements;
+
 public class LoginPage : MonoBehaviour {
     [SerializeField]
     private GameObject popup;
@@ -45,15 +47,15 @@ public class LoginPage : MonoBehaviour {
     public void ConnectFacebook()
     {
 #if USE_FACEBOOK_LOGIN
-        statusMessage.text = "Connecting to Facebook";
         if (!FB.IsInitialized)
         {
-            FB.Init(delegate ()
-            {
-                Debug.Log("starting thread");
-                // shows to connect the current identityid or create a new identityid with facebook authentication
-                Login();
-            });
+            FB.Init(this.OnInitComplete);
+            //FB.Init(delegate ()
+            //{
+            //    Debug.Log("starting thread");
+            //    // shows to connect the current identityid or create a new identityid with facebook authentication
+            //    Login();
+            //});
         }
         else
         {
@@ -63,6 +65,24 @@ public class LoginPage : MonoBehaviour {
         statusMessage.text = "Not Facebook.";
         Debug.Log("Not Facebook.");
 #endif
+    }
+    private void OnInitComplete()
+    {
+        if(!FB.IsInitialized)
+        {
+            StartCoroutine(SetTimeout());
+        }
+        else
+        {
+            if(FB.IsLoggedIn)
+            {
+                LoginCognito();
+            }
+            else
+            {
+                Login();
+            }
+        }
     }
     void Login()
     {
@@ -87,12 +107,16 @@ public class LoginPage : MonoBehaviour {
             {
                 Manager.Instance.facebookId = result.ResultDictionary["user_id"].ToString();
             }
-            Manager.Instance.DownloadHomeJson(null);
-            Manager.Instance.OnSyncSuccess = HandleSyncSuccess;
-            Manager.Instance.OnSyncFailure = HandleSyncFailure;
-            Manager.Instance.LoginCognitoWithFacebook();
-            StartCoroutine(SetTimeout());
+            LoginCognito();
         }
+    }
+    private void LoginCognito()
+    {
+        Manager.Instance.DownloadHomeJson(null);
+        Manager.Instance.OnSyncSuccess = HandleSyncSuccess;
+        Manager.Instance.OnSyncFailure = HandleSyncFailure;
+        Manager.Instance.LoginCognitoWithFacebook();
+        StartCoroutine(SetTimeout());
     }
     private void HandleSyncSuccess(string e)
     {
@@ -126,4 +150,31 @@ public class LoginPage : MonoBehaviour {
             SceneManager.LoadScene("Login");
         });
     }
+    //public void ShowRewardedAd()
+    //{
+    //    if (Advertisement.IsReady("rewardedVideo"))
+    //    {
+    //        var options = new ShowOptions { resultCallback = HandleShowResult };
+    //        Advertisement.Show("rewardedVideo", options);
+    //    }
+    //}
+
+    //private void HandleShowResult(ShowResult result)
+    //{
+    //    switch (result)
+    //    {
+    //        case ShowResult.Finished:
+    //            Debug.Log("The ad was successfully shown.");
+    //            //
+    //            // YOUR CODE TO REWARD THE GAMER
+    //            // Give coins etc.
+    //            break;
+    //        case ShowResult.Skipped:
+    //            Debug.Log("The ad was skipped before reaching the end.");
+    //            break;
+    //        case ShowResult.Failed:
+    //            Debug.LogError("The ad failed to be shown.");
+    //            break;
+    //    }
+    //}
 }

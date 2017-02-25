@@ -5,7 +5,7 @@ using EnhancedUI.EnhancedScroller;
 using EnhancedUI;
 public class InterestController : MonoBehaviour, IEnhancedScrollerDelegate
 {
-    private SmallList<InterestData> _data;
+    private SmallList<Interest> _data;
     public EnhancedScroller scroller;
     public InterestCellView CellViewPrefab;
     private string[] interestNames = new string[] { "fdsafdsa", "treghfsd", "qrweqfdsaf", "vbcxzvbsdfgv", "hgtghfbngfn", "gfdbvcxbs", "greregdfs", "vbcxbnsrhrgh", "grwegfds", "gewgfdsgfd", "ertwetfd", "bvcxbvsfg", "qerewqrte", "vbfscbvcs", "fdsafdas", "vcxzvddfg", "fgsdafgrefgdsafgsdgfsdfg" };
@@ -13,25 +13,28 @@ public class InterestController : MonoBehaviour, IEnhancedScrollerDelegate
     void Awake()
     {
         // create a new data list for the slots
-        _data = new SmallList<InterestData>();
-        scroller.Delegate = this;
+        _data = new SmallList<Interest>();
+        scroller.Delegate = this;//names.AddRange(JsonHelper.getJsonArray<KeyValuePair<string, string>>(test));
     }
-
     void Start()
     {
         //_data = new SmallList<ScrollerData>();
-        Reload(interestNames);
+        Manager.Instance.UpdateAppInfo(()=> { Reload(Manager.Instance.AppInterests); });
+        //Reload(Manager.Instance.AppInterests);
     }
 
-    public void Reload(string[] names)
+    public void Reload(Interest[] interests)
     {
         // reset the data list
         _data.Clear();
 
         // at the sprites from the demo script to this scroller's data cells
-        foreach (var n in names)
+        if (interests != null)
         {
-            _data.Add(new InterestData() { Name = n });
+            foreach (var n in interests)
+            {
+                _data.Add(n);
+            }
         }
         // reload the scroller
         scroller.ReloadData();
@@ -43,29 +46,27 @@ public class InterestController : MonoBehaviour, IEnhancedScrollerDelegate
     {
         InterestCellView cellView = scroller.GetCellView(CellViewPrefab) as InterestCellView;
         cellView.ToggleChange = null;
-        cellView.SetData(_data[dataIndex],isToggleOn(_data[dataIndex].Name));
+        cellView.SetData(_data[dataIndex],isToggleOn(_data[dataIndex].value));
         cellView.ToggleChange = EditInterests;
         return cellView;
     }
-    private bool isToggleOn(string name)
+    private bool isToggleOn(string val)
     {
-        Debug.Log("Toggle count : " + name + userInterests.Contains(name));
-        Debug.Log(userInterests.ToArray());
-        return userInterests.Contains(name);
+        return userInterests.Contains(val);
     }
-    private void EditInterests(bool isOn,string name)
+    private void EditInterests(bool isOn,string val)
     {
         if (isOn)
         {
-            Debug.Log("Toggle : " + isOn + " " + name);
-            if (!userInterests.Contains(name))
+            Debug.Log("Toggle : " + isOn + " " + val);
+            if (!userInterests.Contains(val))
             {
-                userInterests.Add(name);
+                userInterests.Add(val);
             }
         }
         else
         {
-            userInterests.Remove(name);
+            userInterests.Remove(val);
         }
     }
 }

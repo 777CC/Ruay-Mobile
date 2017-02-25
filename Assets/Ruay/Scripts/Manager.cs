@@ -5,8 +5,6 @@ using Amazon.CognitoSync;
 using Amazon.CognitoIdentity;
 using Amazon.CognitoIdentity.Model;
 using Amazon.CognitoSync.SyncManager;
-//using Amazon.S3;
-//using Amazon.S3.Model;
 using Facebook.Unity;
 using System.Collections.Generic;
 using System;
@@ -22,12 +20,15 @@ public class Manager : Singleton<Manager>
     protected Manager() { }
     void Start()
     {
-        
         Debug.Log("Awake" + PlayerPrefs.GetString(PrefsName));
         if (!string.IsNullOrEmpty(PlayerPrefs.GetString(PrefsName)))
         {
             Debug.Log("Load user info from PlayerPrefs. \n" + PlayerPrefs.GetString(PrefsName));
             JsonUtility.FromJsonOverwrite(PlayerPrefs.GetString(PrefsName), Instance);
+        }
+        else
+        {
+            UpdateAppInfo(null);
         }
         if (Instance.GetComponent<UnityInitializer>() == null)
         {
@@ -58,14 +59,9 @@ public class Manager : Singleton<Manager>
     private List<Reward> rewards;
     public string[] Event;
     #endregion
-    
+
     #region AppInfo
     //Cognito
-    [SerializeField]
-    private string dataSetName = "Info";
-    //S3
-    //public const string AppInfoS3BucketName = "testchainkchoonoi", AppInfoFileName = "Appinfo.txt";
-    //const string appInfoUrl = @"";
     const string appInfoUrl = @"https://s3-ap-southeast-1.amazonaws.com/ruay/Appinfo.json";
     //const string info = "Appinfo.json";
     [SerializeField]
@@ -78,16 +74,29 @@ public class Manager : Singleton<Manager>
         }
     }
     [SerializeField]
+    private string dataSetName = "Info";
+    [SerializeField]
     private string homeFlieName = "home.json";
+    [SerializeField]
+    private string androidAdUnitId = "ca-app-pub-4416122709352572/4608987845";
+    private string iosAdUnitId = "ca-app-pub-4416122709352572/4608987845";
     //const string 
     [SerializeField]
-    private string IdentityPoolId = "ap-northeast-1:d2051844-b612-4173-a365-838a4da96036";
-    //public string IdentityPoolId = "ap-northeast-1:d2051844-b000-0000-a365-838a4da96000";
+    private string identityPoolId = "ap-northeast-1:d2051844-b612-4173-a365-838a4da96036";
     [SerializeField]
     private string regionName = RegionEndpoint.APNortheast1.SystemName;
     //private int updateTimeCount = 86400000;//milliseconds in Day.
     [SerializeField]
     private double updateTimeCount = 180000;
+    [SerializeField]
+    private Interest[] appInterests;
+    public Interest[] AppInterests
+    {
+        get
+        {
+            return appInterests;
+        }
+    }
     public const string HomePageName = "Home";
     const string MyTicketsPageId = "MyTickets";
     const string MyTicketsPageName = "ฉลากของคุณ";
@@ -101,7 +110,7 @@ public class Manager : Singleton<Manager>
     {
         get
         {
-            if(imageSizeWidth == 0)
+            if (imageSizeWidth == 0)
             {
                 imageSizeWidth = (int)((imageW * Screen.width) / (screenW));
             }
@@ -125,28 +134,38 @@ public class Manager : Singleton<Manager>
     private Item[] rounds;
     [SerializeField]
     private Item[] items;
+    public IEnumerator DownloadJson(string url, Action<string> callback)
+    {
+        WWW www = new WWW(url);
+        yield return www;
+        if (callback != null)
+        {
+            Debug.Log(www.text);
+            callback(www.text);
+        }
+    }
     public delegate void GetPage(Page page);
-    public void GetPageById(string pageId,GetPage getPage)
+    public void GetPageById(string pageId, GetPage getPage)
     {
         if (pages != null)
         {
             if (getPage != null)
             {
-               getPage(pages.Find(page => page.id == pageId));
+                getPage(pages.Find(page => page.id == pageId));
             }
         }
         else
         {
-            StartCoroutine( WaitForDonwloadHomeJson(pageId,getPage));
+            StartCoroutine(WaitForDonwloadHomeJson(pageId, getPage));
         }
     }
-    IEnumerator WaitForDonwloadHomeJson(string pageId,GetPage getPage)
+    IEnumerator WaitForDonwloadHomeJson(string pageId, GetPage getPage)
     {
-        yield return new WaitUntil(()=> pages != null);
+        yield return new WaitUntil(() => pages != null);
         getPage(pages.Find(page => page.id == pageId));
     }
     public delegate void GetItem(Item item);
-    public delegate void GetTicket(Ticket ticket,Item round);
+    public delegate void GetTicket(Ticket ticket, Item round);
     public delegate void GetReward(Reward reward, Item item);
     public void GetRoundById(string roundId, GetItem getRound)
     {
@@ -220,7 +239,7 @@ public class Manager : Singleton<Manager>
         get
         {
             bool IsUserRegistered = true;
-            for(int i = 0; i< UserInfoKeys.Length;i++)
+            for (int i = 0; i < UserInfoKeys.Length; i++)
             {
                 string val = UserInfo.Get(UserInfoKeys[i]);
                 int isZero;
@@ -236,8 +255,24 @@ public class Manager : Singleton<Manager>
     }
     public void UpdateAppInfo(System.Action callback)
     {
-        //Debug.Log("UpdateAppInfo");
-        StartCoroutine(DownloadAppInfo(callback));
+        StartCoroutine(DownloadJson(appInfoUrl, (data)=> {
+            try
+            {
+                JsonUtility.FromJsonOverwrite(data, Instance);
+                SetAWS();
+                Save();
+            }
+            catch (Exception e)
+            {
+                Debug.Log("cannot update appinfo : " + e);
+            }
+            if (callback != null)
+            {
+                callback();
+            }
+        }));
+        //StartCoroutine(DownloadAppInfo(callback));
+
         //S3Client.GetObjectAsync(AppInfoS3BucketName, AppInfoFileName, (responseObj) =>
         //{
         //    if (responseObj.Exception == null)
@@ -262,28 +297,6 @@ public class Manager : Singleton<Manager>
         //    }
         //});   
     }
-    private IEnumerator DownloadAppInfo(System.Action callback)
-    {
-        WWW www = new WWW(appInfoUrl);
-        yield return www;
-        Debug.Log(www.text);
-        if (www.responseHeaders.Count > 0)
-        {
-            foreach (KeyValuePair<string, string> entry in www.responseHeaders)
-            {
-                Debug.Log(entry.Value + "=" + entry.Key);
-            }
-        }
-        try {
-            JsonUtility.FromJsonOverwrite(www.text, Instance);
-            SetAWS();
-            Save();
-            callback();
-        }catch
-        {
-            Debug.Log("cannot update appinfo");
-        }
-    }
     #region AWS
     private Dataset userInfo;
     private Dataset UserInfo
@@ -299,27 +312,37 @@ public class Manager : Singleton<Manager>
     }
     public void DownloadHomeJson(Action callback)
     {
-        StartCoroutine(downloadHomeJson(callback));
-    }
-    IEnumerator downloadHomeJson(Action callback)
-    {
-        WWW www = new WWW(appUrl + homeFlieName);
-        Debug.Log(www.url);
-        yield return www;
-        Debug.Log(www.text);
-        JsonUtility.FromJsonOverwrite(www.text, Instance);
-        SetPages();
-        SetMyTicketsPage();
-        SetMyRewardsPage();
-        if (callback != null)
-        {
-            callback();
-        }
+        StartCoroutine(DownloadJson(appUrl + homeFlieName, (data) => {
+            try
+            {
+                JsonUtility.FromJsonOverwrite(data, Instance);
+                SetPages();
+                SetMyTicketsPage();
+                SetMyRewardsPage();
+                if (callback != null)
+                {
+                    callback();
+                }
+            }
+            catch
+            {
+                Debug.Log("cannot update appinfo");
+            }
+        }));
     }
     void SetPages()
     {
         pages.ForEach((page) =>
         {
+            if (page.id == HomePageName)
+            {
+                Card ad = new Card();
+                ad.viewType = CardType.Ad;
+                //int i = UnityEngine.Random.Range(0, page.cards.Count - 1);
+                int i = 0;
+                Debug.Log("R : " +i);
+                page.cards.Insert(i, ad);
+            }
             //if (page.name != HomePageName && page.name != MyTicketsName && page.name != MyRewardsName)
             if (page.id != MyTicketsPageId && page.id != MyRewardsPageId)
             {
@@ -330,7 +353,7 @@ public class Manager : Singleton<Manager>
     void SetMyTicketsPage()
     {
         Page page = pages.Find(p => p.id == MyTicketsPageId);
-        if(page == null)
+        if (page == null)
         {
             page = new Page();
         }
@@ -485,19 +508,6 @@ public class Manager : Singleton<Manager>
             return lambdaClient;
         }
     }
-    //private IAmazonS3 s3Client;
-    //public IAmazonS3 S3Client
-    //{
-    //    get
-    //    {
-    //        if (s3Client == null)
-    //        {
-    //            SetAWS();
-    //        }
-    //        //test comment
-    //        return s3Client;
-    //    }
-    //}
     public void LoginCognitoWithFacebook()
     {
         Credentials.AddLogin("graph.facebook.com", AccessToken.CurrentAccessToken.TokenString);
@@ -533,13 +543,13 @@ public class Manager : Singleton<Manager>
         {
             Debug.Log("No UpdateUserInfo : " + time + " : " + updateTime + updateTimeCount);
             //OnSyncSuccess(string.Empty);
-            HandleSyncSuccess(null,null);
+            HandleSyncSuccess(null, null);
         }
         Save();
     }
-    private void PutToDataset(string key,string val)
+    private void PutToDataset(string key, string val)
     {
-        if (!string.IsNullOrEmpty(val)){
+        if (!string.IsNullOrEmpty(val)) {
             UserInfo.Put(key, val);
         }
     }
@@ -571,7 +581,7 @@ public class Manager : Singleton<Manager>
         interests = UserInfo.Get("interests");
         Ticket[] tk = JsonHelper.getJsonArray<Ticket>(UserInfo.Get("tickets"));
         Reward[] rw = JsonHelper.getJsonArray<Reward>(UserInfo.Get("rewards"));
-        if(tk!=null)
+        if (tk != null)
         {
             tickets = new List<Ticket>(tk);
         }
@@ -582,6 +592,7 @@ public class Manager : Singleton<Manager>
         SetMyTicketsPage();
         SetMyRewardsPage();
         Save();
+        AdsInit();
         if (OnSyncSuccess != null)
         {
             OnSyncSuccess(string.Empty);
@@ -621,7 +632,7 @@ public class Manager : Singleton<Manager>
     {
         Debug.Log("SetAWS");
         region = RegionEndpoint.GetBySystemName(regionName);
-        credentials = new CognitoAWSCredentials(IdentityPoolId, region);
+        credentials = new CognitoAWSCredentials(identityPoolId, region);
         syncManager = new CognitoSyncManager(credentials, new AmazonCognitoSyncConfig { RegionEndpoint = region });
         userInfo = SyncManager.OpenOrCreateDataset(dataSetName);
         userInfo.OnSyncSuccess += HandleSyncSuccess;
@@ -640,7 +651,7 @@ public class Manager : Singleton<Manager>
     }
     #endregion
 
-    public void DialogPopup(string header,string desc,Action onAccept,Action onCancel)
+    public void DialogPopup(string header, string desc, Action onAccept, Action onCancel)
     {
         DialogPopup popup = Instantiate(Resources.Load<GameObject>("DialogPopup"), FindObjectOfType<Canvas>().transform, false).GetComponent<DialogPopup>();
         popup.SetDialog(header, desc, onAccept, onCancel);
@@ -679,7 +690,7 @@ public class Manager : Singleton<Manager>
                 {
                     tickets.Add(newTicket);
                     SetMyTicketsPage();
-                    
+
                     satang -= Array.Find(rounds, (r) => r.id == newTicket.roundId).price * newTicket.amount;
                     Save();
                     if (onSuccess != null)
@@ -743,4 +754,88 @@ public class Manager : Singleton<Manager>
         });
     }
     #endregion
+
+    #region Ads
+    GoogleMobileAdBanner adsBanner;
+    void AdsInit()
+    {
+        //Required
+        GoogleMobileAd.Init();
+#if UNITY_ANDROID
+        GoogleMobileAdSettings.Instance.Android_BannersUnitId = androidAdUnitId;
+#elif UNITY_IOS
+        GoogleMobileAdSettings.Instance.IOS_BannersUnitId = iosAdUnitId;
+#endif
+        //Optional, add data for better ad targeting
+        if (gender == "male")
+        {
+            GoogleMobileAd.SetGender(GoogleGender.Male);
+        }else if(gender == "female")
+        {
+            GoogleMobileAd.SetGender(GoogleGender.Female);
+        }
+        else
+        {
+            GoogleMobileAd.SetGender(GoogleGender.Unknown);
+        }
+        Array.ForEach<string>(interests.Split('#'), (keyword) => {
+            if (string.IsNullOrEmpty(keyword))
+            {
+                GoogleMobileAd.AddKeyword(keyword);
+            }
+        });
+        var day = FromUnixTime(birthday);
+        GoogleMobileAd.SetBirthday(day.Year,(AndroidMonth)(day.Month - 1), day.Day);
+        GoogleMobileAd.TagForChildDirectedTreatment(false);
+
+        adsBanner = GoogleMobileAd.CreateAdBanner(0,0, GADBannerSize.MEDIUM_RECTANGLE);
+
+        //listening for banner to load example using C# actions:
+        //banner2.OnLoadedAction += OnBannerLoadedAction;
+        adsBanner.ShowOnLoad = false;
+    }
+    public void ShowAd(Rect rect,Action<GoogleMobileAdBanner> onComplete)
+    {
+        if (adsBanner != null)
+        {
+            if (adsBanner.IsLoaded)
+            {
+                adsBanner.Show();
+                adsBanner.SetBannerPosition((int)(rect.x + ((rect.width - adsBanner.width) / 2)), (int)(rect.y + ((rect.height - adsBanner.height) / 2)));
+            }
+            else
+            {
+                //AdsInit();
+                adsBanner.ShowOnLoad = true;
+                adsBanner.OnLoadedAction += onComplete;
+            }
+        }
+        else
+        {
+            AdsInit();
+            adsBanner.ShowOnLoad = true;
+            adsBanner.OnLoadedAction += onComplete;
+        }
+    }
+
+    public void HideAd()
+    {
+        if (adsBanner != null)
+        {
+            adsBanner.Hide();
+        }
+    }
+    public void SetAdPosition(Rect rect)
+    {
+        if (adsBanner != null)
+        {
+            adsBanner.SetBannerPosition((int)(rect.x + ((rect.width - adsBanner.width) /2)), (int)(rect.y + ((rect.height - adsBanner.height) / 2)));
+        }
+    }
+    private DateTime FromUnixTime(long unixTime)
+    {
+        var epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        return epoch.AddMilliseconds(unixTime);
+    }
+#endregion
 }

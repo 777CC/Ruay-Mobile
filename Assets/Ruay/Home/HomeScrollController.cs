@@ -21,7 +21,8 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
     private PageHeader header;
     public Page currentPage;
     private SmallList<view> viewStack = new SmallList<view>();
-    
+    UnityEngine.Events.UnityAction<Vector2> scrollRectMove;
+    HomeScrollCallView adBanner;
     //private SmallList<Card> card;
     void Awake()
     {
@@ -31,9 +32,10 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
         // create a new data list for the slots
         //card = new SmallList<Card>();
 #if UNITY_EDITOR
-        Manager.Instance.DownloadHomeJson(()=> {  });
-#endif
+        Manager.Instance.DownloadHomeJson(()=> { NextPage("Home", null); });
+#else
         NextPage("Home", null);
+#endif
     }
 #if UNITY_ANDROID
     public virtual void Update()
@@ -55,6 +57,24 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
             currentPage = nextPage;
             scroller.ReloadData();
             header.SetData(scroller.ScrollRect, currentPage.name, viewStack.Count == 1, viewStack.Count > 1, () => { BackPage(); });
+            if (scrollRectMove != null)
+            {
+                scroller.ScrollRect.onValueChanged.RemoveListener(scrollRectMove);
+            }
+            Card ad = currentPage.cards.Find((c) => c.viewType == CardType.Ad);
+            if (ad.viewType == CardType.Ad)
+            {
+                scrollRectMove = (p) =>
+                {
+                    if (adBanner != null)
+                    {
+                        Manager.Instance.SetAdPosition(adBanner.pos);
+                    }
+                };
+                scroller.ScrollRect.onValueChanged.AddListener(scrollRectMove);
+            }
+            Manager.Instance.HideAd();
+            adBanner = null;
         }
     }
     void NextPage(Page nextPage)
@@ -210,6 +230,9 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
             case CardType.Header:
                 height = 170;
                 break;
+            case CardType.Ad:
+                height = 900;
+                break;
             default:
                 goto case CardType.NameOnlyLeft;
         }
@@ -218,7 +241,19 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
     public EnhancedScrollerCellView GetCellView(EnhancedScroller scroller, int dataIndex, int cellIndex)
     {
         HomeScrollCallView cellView = scroller.GetCellView(CellViewPrefab) as HomeScrollCallView;
-            cellView.OnClick.RemoveAllListeners();
+        if (cellView == adBanner && currentPage.cards[dataIndex].viewType != CardType.Ad)
+        {
+            Manager.Instance.HideAd();
+            adBanner = null;
+        }
+        else
+        {
+            if (currentPage.cards[dataIndex].viewType == CardType.Ad)
+            {
+                StartCoroutine(SetAd(cellView));
+            }
+        }
+        cellView.OnClick.RemoveAllListeners();
         if (!string.IsNullOrEmpty(currentPage.cards[dataIndex].nextPage))
         {
             cellView.OnClick.AddListener(() =>
@@ -228,6 +263,16 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
         }
         return cellView;
     }
+    IEnumerator SetAd(HomeScrollCallView view)
+    {
+        yield return new WaitForSeconds(0.2f);
+        Debug.Log("ShowAd" + view.pos);
+        Manager.Instance.ShowAd(view.pos, (ad) =>
+        {
+            Manager.Instance.SetAdPosition(view.pos);
+        });
+        adBanner = view;
+    }
     private void CellViewVisibilityChanged(EnhancedScrollerCellView cellView)
     {
         // cast the cell view to our custom view
@@ -236,10 +281,41 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
         // if the cell is active, we set its data, 
         // otherwise we will clear the image back to 
         // its default state
-
-        if (cellView.active)
-            view.SetData(currentPage.cards[cellView.dataIndex]);
+        Debug.Log(cellView.dataIndex);
+        Debug.Log(currentPage.cards.Count);
+        
+        if(currentPage.cards.Count == 0)
+        {
+            Debug.Log("HideAd");
+            Manager.Instance.HideAd();
+            adBanner = null;
+        }
         else
+        {
+            if (currentPage.cards[cellView.dataIndex].viewType == CardType.Ad)
+            {
+                if (cellView.active)
+                {
+                    //Debug.Log("ShowAd" + view.pos);
+                    //Manager.Instance.ShowAd(view.pos,(ad)=> {
+                    //    Manager.Instance.SetAdPosition(view.pos);
+                    //});
+                    //adBanner = view;
+                }
+                else
+                {
+                    Debug.Log("HideAd");
+                    Manager.Instance.HideAd();
+                    adBanner = null;
+                }
+            }
+        }
+        if (cellView.active) { 
+            view.SetData(currentPage.cards[cellView.dataIndex]);
+        }
+        else
+        {
             view.ClearImage();
+        }
     }
 }

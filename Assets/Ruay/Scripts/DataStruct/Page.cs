@@ -13,6 +13,7 @@ public enum CardType
     NameWithBG = 8,
     NameWithLine = 9,
     Header = 10,
+    Ad = 11,
 }//706
 [Serializable]
 public class Page{
