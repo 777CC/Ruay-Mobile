@@ -19,7 +19,7 @@ public class InterestController : MonoBehaviour, IEnhancedScrollerDelegate
     void Start()
     {
         //_data = new SmallList<ScrollerData>();
-        Manager.Instance.UpdateAppInfo(()=> { Reload(Manager.Instance.AppInterests); });
+        //Manager.Instance.UpdateAppInfo(()=> { Reload(Manager.Instance.AppInterests); });
         //Reload(Manager.Instance.AppInterests);
     }
 

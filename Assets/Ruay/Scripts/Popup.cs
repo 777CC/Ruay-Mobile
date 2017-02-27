@@ -24,6 +24,7 @@ public class Popup : MonoBehaviour {
             drag.OnBack = Back;
         }
     }
+    //For popup not close when press back button on android.
 #if UNITY_ANDROID
     public virtual void Update()
     {

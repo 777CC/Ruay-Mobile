@@ -40,8 +40,4 @@ public class DialogPopup : Popup{
         }
         Show();
     }
-    public override void Update()
-    {
-        //For popup not close when press back button on android.
-    }
 }

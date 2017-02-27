@@ -4,11 +4,11 @@ using UnityEngine.SceneManagement;
 using System.Collections;
 using System.Collections.Generic;
 using Amazon.CognitoSync.SyncManager;
-
 public class UserInfo : MonoBehaviour
 {
+    public RectTransform FormRect;
     public GameObject Loading;
-    public Animator AllPageAni;
+    public Animator FormAnimator;
     public Button Next;
     const string NextStr = "Next";
     public Button Back;
@@ -32,11 +32,13 @@ public class UserInfo : MonoBehaviour
     Toggle AnotherToggle;
     [SerializeField]
     InputField genderField;
-
     [SerializeField]
     InterestController interestController;
-    void Start()
+    private int pageIndex = 1;
+    public Toggle[] zodiacToggles;
+    private void Start()
     {
+        SetZodiac();
         nameField.text = Manager.Instance.firstName;
         lastnameField.text = Manager.Instance.lastName;
         if (Manager.Instance.tel != 0)
@@ -71,6 +73,38 @@ public class UserInfo : MonoBehaviour
                 }
             }
         }
+    }
+    private void SetZodiac()
+    {
+        for (int i = 0; i < zodiacToggles.Length; i++)
+        {
+            int index = i;
+            zodiacToggles[i].onValueChanged.AddListener((isOn) => {
+                if (isOn)
+                {
+                    Manager.Instance.zodiac = index + 1;
+                    Debug.Log("zodiacToggles : " + index);
+                }
+            });
+        }
+    }
+    public void NextMove()
+    {
+        //Next.interactable = false;
+        //Back.interactable = false;
+        LeanTween.moveX(FormRect, FormRect.anchoredPosition.x - 1080, 0.25f).setEaseInOutSine().setOnComplete(() => {
+            // Next.interactable = true;
+            // Back.interactable = true;
+        });
+    }
+    public void BackMove()
+    {
+        Next.interactable = false;
+        Back.interactable = false;
+        LeanTween.moveX(FormRect, FormRect.anchoredPosition.x + 1080, 0.25f).setEaseInOutSine().setOnComplete(() => {
+            Next.interactable = true;
+            Back.interactable = true;
+        });
     }
     void NamePageValidtation()
     {
@@ -137,6 +171,24 @@ public class UserInfo : MonoBehaviour
             Manager.Instance.DialogPopup("", message, null, null);
         }
     }
+    void ZodiacValidation()
+    {
+        bool isValid = true;
+        string message = string.Empty;
+        if (Manager.Instance.zodiac <= 0)
+        {
+            message += "-กรุณาใส่ราศี";
+            isValid = false;
+        }
+        if (isValid)
+        {
+            Validated();
+        }
+        else
+        {
+            Manager.Instance.DialogPopup("", message, null, null);
+        }
+    }
     void InterestValidation()
     {
         bool isValid = true;
@@ -148,7 +200,7 @@ public class UserInfo : MonoBehaviour
         }
         if (isValid)
         {
-            SetInterest(InterestsToString(interestController.userInterests));
+            SetInterest(interestsToString(interestController.userInterests));
             Loading.gameObject.SetActive(true);
             Manager.Instance.OnSyncSuccess = HandleSyncSuccess;
             Manager.Instance.OnSyncFailure = HandleSyncFailure;
@@ -159,7 +211,7 @@ public class UserInfo : MonoBehaviour
             Manager.Instance.DialogPopup("", message, null, null);
         }
     }
-    private string InterestsToString(List<string> names)
+    private string interestsToString(List<string> names)
     {
         string str = string.Empty;
         names.ForEach(delegate (string name)
@@ -170,7 +222,9 @@ public class UserInfo : MonoBehaviour
     }
     private void Validated()
     {
-        AllPageAni.SetTrigger(NextStr);
+        pageIndex++;
+        NextMove();
+        //FormAnimator.SetTrigger(NextStr);
     }
     private void HandleSyncSuccess(string e)
     {
@@ -184,39 +238,66 @@ public class UserInfo : MonoBehaviour
     }
     public void NextPage()
     {
-        //Debug.Log(AllPageAni.GetCurrentAnimatorStateInfo(0).);
-        if (AllPageAni.GetCurrentAnimatorStateInfo(0).IsName("Base.NamePage"))
+        switch(pageIndex)
         {
-            NamePageValidtation();
+            case 1:
+                NamePageValidtation();
+                break;
+            case 2:
+                BirthDayValidtation();
+                break;
+            case 3:
+                GenderValidation();
+                break;
+            case 4:
+                ZodiacValidation();
+                break;
+            case 5:
+                InterestValidation();
+                break;
         }
-        else if (AllPageAni.GetCurrentAnimatorStateInfo(0).IsName("Base.BirthDay"))
-        {
-            BirthDayValidtation();
-        }
-        else if (AllPageAni.GetCurrentAnimatorStateInfo(0).IsName("Base.Gender"))
-        {
-            GenderValidation();
-        }
-        else if (AllPageAni.GetCurrentAnimatorStateInfo(0).IsName("Base.Interest"))
-        {
-            InterestValidation();
-        }
-        else
-        {
-            AllPageAni.SetTrigger(NextStr);
-        }
+        //if (FormAnimator.GetCurrentAnimatorStateInfo(0).IsName("Base.NamePage"))
+        //{
+        //    NamePageValidtation();
+        //}
+        //else if (FormAnimator.GetCurrentAnimatorStateInfo(0).IsName("Base.BirthDay"))
+        //{
+        //    BirthDayValidtation();
+        //}
+        //else if (FormAnimator.GetCurrentAnimatorStateInfo(0).IsName("Base.Gender"))
+        //{
+        //    GenderValidation();
+        //}
+        //else if (FormAnimator.GetCurrentAnimatorStateInfo(0).IsName("Base.Interest"))
+        //{
+        //    InterestValidation();
+        //}
+        //else
+        //{
+        //    FormAnimator.SetTrigger(NextStr);
+        //}
         Manager.Instance.Save();
     }
     public void BackPage()
     {
-        if (AllPageAni.GetCurrentAnimatorStateInfo(0).IsName("NamePage"))
+        if(pageIndex == 1)
         {
             BackToLogin();
         }
         else
         {
-            AllPageAni.SetTrigger(BackStr);
+            BackMove();
         }
+        pageIndex--;
+        Debug.Log(pageIndex);
+        //if (FormAnimator.GetCurrentAnimatorStateInfo(0).IsName("NamePage"))
+        //{
+        //    BackToLogin();
+        //}
+        //else
+        //{
+        //    FormAnimator.SetTrigger(BackStr);
+        //}
     }
     public void BackToLogin()
     {

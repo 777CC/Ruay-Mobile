@@ -53,6 +53,7 @@ public class Manager : Singleton<Manager>
     [SerializeField]
     public int birthday = 0;
     public string interests = string.Empty;
+    public int zodiac = 0;
     [SerializeField]
     private List<Ticket> tickets;
     [SerializeField]
