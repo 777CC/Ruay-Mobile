@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.SceneManagement;
 using System.Collections;
 using Amazon;
 using Amazon.CognitoSync;
@@ -20,24 +21,28 @@ public class Manager : Singleton<Manager>
     protected Manager() { }
     void Start()
     {
-        Debug.Log("Awake" + PlayerPrefs.GetString(PrefsName));
-        if (!string.IsNullOrEmpty(PlayerPrefs.GetString(PrefsName)))
+        //PlayerPrefs.DeleteAll();
+        if (Instance == this || Instance == null)
         {
-            Debug.Log("Load user info from PlayerPrefs. \n" + PlayerPrefs.GetString(PrefsName));
-            JsonUtility.FromJsonOverwrite(PlayerPrefs.GetString(PrefsName), Instance);
+            if (!string.IsNullOrEmpty(PlayerPrefs.GetString(PrefsName)))
+            {
+                Debug.Log("Load user info from PlayerPrefs. \n" + PlayerPrefs.GetString(PrefsName));
+                JsonUtility.FromJsonOverwrite(PlayerPrefs.GetString(PrefsName), Instance);
+            }
+            else
+            {
+                UpdateAppInfo(null);
+            }
+            if (Instance.GetComponent<UnityInitializer>() == null)
+            {
+                UnityInitializer.AttachToGameObject(Instance.gameObject);
+            }
+            SetAWS();
+            SceneManager.LoadScene("Login");
         }
-        else
-        {
-            UpdateAppInfo(null);
-        }
-        if (Instance.GetComponent<UnityInitializer>() == null)
-        {
-            UnityInitializer.AttachToGameObject(Instance.gameObject);
-        }
-        SetAWS();
     }
     #region UserData
-    private string[] UserInfoKeys = { "firstName", "lastName", "gender", "tel", "birthday", "interests" };
+    private string[] UserInfoKeys = { "firstName", "lastName",  "tel", "birthday", "gender", "zodiac", "interests" };
     public string facebookId = string.Empty;
     public int satang = 0;
     public string firstName = string.Empty;
@@ -48,8 +53,7 @@ public class Manager : Singleton<Manager>
     public int dailyRawardTime;
     public string email = string.Empty;
     public string gender = string.Empty;
-    [SerializeField]
-    public int tel = 0;
+    public string phoneNumber = string.Empty;
     [SerializeField]
     public int birthday = 0;
     public string interests = string.Empty;
@@ -259,6 +263,7 @@ public class Manager : Singleton<Manager>
         StartCoroutine(DownloadJson(appInfoUrl, (data)=> {
             try
             {
+                Debug.Log("Update appinfo : " + data);
                 JsonUtility.FromJsonOverwrite(data, Instance);
                 SetAWS();
                 Save();
@@ -512,23 +517,24 @@ public class Manager : Singleton<Manager>
     public void LoginCognitoWithFacebook()
     {
         Credentials.AddLogin("graph.facebook.com", AccessToken.CurrentAccessToken.TokenString);
-        UpdateUserInfo();
+        UpdateUserInfo(true);
     }
-    public void UpdateUserInfo()
+    public void UpdateUserInfo(bool isCheckTime)
     {
         double time = GetUnixTime();
-        if ((updateTime + updateTimeCount < time) || (updateTime - updateTimeCount > time))
+        if(!isCheckTime || (updateTime + updateTimeCount < time) || (updateTime - updateTimeCount > time))
         {
             Debug.Log("UpdateUserInfo : " + time + " : " + ((updateTime + updateTimeCount) - time));
-            Debug.Log("tel " + tel + " + " + birthday);
+            Debug.Log("tel " + phoneNumber + " + " + birthday);
             PutToDataset("updateTime", time.ToString("0"));
             PutToDataset("facebookId", facebookId);
             PutToDataset("firstName", firstName);
             PutToDataset("lastName", lastName);
-            PutToDataset("tel", tel.ToString());
+            PutToDataset("phoneNumber", phoneNumber);
             PutToDataset("inviteBy", inviteBy);
             PutToDataset("birthday", birthday.ToString());
             PutToDataset("gender", gender);
+            PutToDataset("zodiac", zodiac.ToString());
             PutToDataset("interests", interests);
             UserInfo.SynchronizeAsync();
             //foreach (KeyValuePair<string, string> entry in UserInfo.ActiveRecords)
@@ -556,10 +562,13 @@ public class Manager : Singleton<Manager>
     }
     private void HandleSyncSuccess(object sender, SyncSuccessEventArgs e)
     {
-        double time;
-        if (double.TryParse(UserInfo.Get("updateTime"), out time))
+        if (e != null)
         {
-            updateTime = time;
+            double time;
+            if (double.TryParse(UserInfo.Get("updateTime"), out time))
+            {
+                updateTime = time;
+            }
         }
         int s;
         if (int.TryParse(UserInfo.Get("satang"), out s))
@@ -569,15 +578,16 @@ public class Manager : Singleton<Manager>
         firstName = UserInfo.Get("firstName");
         lastName = UserInfo.Get("lastName");
         gender = UserInfo.Get("gender");
-        int number;
-        if (int.TryParse(UserInfo.Get("tel"), out number))
-        {
-            tel = number;
-        }
+        phoneNumber = UserInfo.Get("phoneNumber");
         int date;
         if (int.TryParse(UserInfo.Get("birthday"), out date))
         {
             birthday = date;
+        }
+        int zo;
+        if (int.TryParse(UserInfo.Get("zodiac"), out zo))
+        {
+            zodiac = zo;
         }
         interests = UserInfo.Get("interests");
         Ticket[] tk = JsonHelper.getJsonArray<Ticket>(UserInfo.Get("tickets"));
@@ -633,7 +643,17 @@ public class Manager : Singleton<Manager>
     {
         Debug.Log("SetAWS");
         region = RegionEndpoint.GetBySystemName(regionName);
-        credentials = new CognitoAWSCredentials(identityPoolId, region);
+        if (credentials == null)
+        {
+            credentials = new CognitoAWSCredentials(identityPoolId, region);
+        }
+        else
+        {
+            if(credentials.IdentityPoolId != identityPoolId)
+            {
+                credentials = new CognitoAWSCredentials(identityPoolId, region);
+            }
+        }
         syncManager = new CognitoSyncManager(credentials, new AmazonCognitoSyncConfig { RegionEndpoint = region });
         userInfo = SyncManager.OpenOrCreateDataset(dataSetName);
         userInfo.OnSyncSuccess += HandleSyncSuccess;

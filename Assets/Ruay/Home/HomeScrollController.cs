@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using EnhancedUI.EnhancedScroller;
 using EnhancedUI;
@@ -142,6 +143,10 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
                 Manager.Instance.GetRewardByIndex(index, (it, r) => { ShowRewardDesc("ItemDescPopup", it, r,tex); });
             }
         }
+        else if (pageName == "UserInfo")
+        {
+            SceneManager.LoadScene("UserInfoEditor");
+        }
         else if (!string.IsNullOrEmpty(pageName))
         {
             Manager.Instance.GetPageById(pageName, NextPage);
@@ -266,10 +271,31 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
     IEnumerator SetAd(HomeScrollCallView view)
     {
         yield return new WaitForSeconds(0.2f);
-        Debug.Log("ShowAd" + view.pos);
         Manager.Instance.ShowAd(view.pos, (ad) =>
         {
-            Manager.Instance.SetAdPosition(view.pos);
+            if (view != null)
+            {
+                if (currentPage.cards.Count > view.dataIndex)
+                {
+                    Debug.Log("ShowAd" + view.dataIndex);
+                    if (currentPage.cards[view.dataIndex].viewType == CardType.Ad)
+                    {
+                        Manager.Instance.SetAdPosition(view.pos);
+                    }
+                    else
+                    {
+                        Manager.Instance.HideAd();
+                    }
+                }
+                else
+                {
+                    Manager.Instance.HideAd();
+                }
+            }
+            else
+            {
+                Manager.Instance.HideAd();
+            }
         });
         adBanner = view;
     }

@@ -16,13 +16,13 @@ public class UserInfo : MonoBehaviour
 
 
     [SerializeField]
-    InputField nameField;
+    InputField firstnameField;
     [SerializeField]
     InputField lastnameField;
     [SerializeField]
     InputField inviteByField;
     [SerializeField]
-    InputField telField;
+    InputField phoneNumberField;
 
     [SerializeField]
     Toggle maleToggle;
@@ -39,12 +39,9 @@ public class UserInfo : MonoBehaviour
     private void Start()
     {
         SetZodiac();
-        nameField.text = Manager.Instance.firstName;
+        firstnameField.text = Manager.Instance.firstName;
         lastnameField.text = Manager.Instance.lastName;
-        if (Manager.Instance.tel != 0)
-        {
-            telField.text = Manager.Instance.tel.ToString("0000000000");
-        }
+        phoneNumberField.text = Manager.Instance.phoneNumber;
         inviteByField.text = Manager.Instance.inviteBy;
         if (Manager.Instance.gender == "male")
         {
@@ -61,18 +58,52 @@ public class UserInfo : MonoBehaviour
             AnotherToggle.Select();
             genderField.text = Manager.Instance.gender;
         }
-        if (!string.IsNullOrEmpty(Manager.Instance.interests))
+        int zodiacIndex = Manager.Instance.zodiac;
+        if (zodiacIndex > 0)
         {
-            string[] selecteds = Manager.Instance.interests.Split('#');
-            for (int i = 0; i < selecteds.Length; i++)
+            if (zodiacToggles.Length > zodiacIndex)
             {
-                Debug.Log(selecteds[i]);
-                if (selecteds[i].Length >0)
-                {
-                    interestController.userInterests.Add(selecteds[i]);
-                }
+                zodiacToggles[zodiacIndex - 1].isOn = true;
             }
         }
+        if (!string.IsNullOrEmpty(Manager.Instance.interests))
+        {
+            Manager.Instance.UpdateAppInfo(() =>
+            {
+                string[] selecteds = Manager.Instance.interests.Split('#');
+                for (int i = 0; i < selecteds.Length; i++)
+                {
+                    Debug.Log(selecteds[i]);
+                    if (selecteds[i].Length > 0)
+                    {
+                        interestController.userInterests.Add(selecteds[i]);
+                    }
+                }
+                if (interestController.userInterests.Count > 0)
+                {
+                    interestController.Reload(Manager.Instance.AppInterests);
+                }
+            });
+        }
+        else
+        {
+            Manager.Instance.UpdateAppInfo(() =>
+            {
+                interestController.Reload(Manager.Instance.AppInterests);
+            });
+        }
+        firstnameField.onValueChanged.AddListener(((text) => {
+            Manager.Instance.firstName = text;
+        }));
+        lastnameField.onValueChanged.AddListener(((text) => {
+            Manager.Instance.lastName = text;
+        }));
+        phoneNumberField.onValueChanged.AddListener(((text) => {
+            Manager.Instance.phoneNumber = text;
+        }));
+        inviteByField.onValueChanged.AddListener(((text) => {
+            Manager.Instance.inviteBy = text;
+        }));
     }
     private void SetZodiac()
     {
@@ -115,12 +146,12 @@ public class UserInfo : MonoBehaviour
             message += "-กรุณาใส่ชื่อ\n";
             isValid = false;
         }
-        if (Manager.Instance.lastName == string.Empty)
+        if (string.IsNullOrEmpty(Manager.Instance.lastName))
         {
             message += "-กรุณาใส่นามสกุล\n";
             isValid = false;
         }
-        if (Manager.Instance.tel == 0)
+        if (string.IsNullOrEmpty(Manager.Instance.phoneNumber))
         {
             message += "-กรุณาใส่เบอร์มือถือ\n";
             isValid = false;
@@ -137,56 +168,35 @@ public class UserInfo : MonoBehaviour
     }
     void BirthDayValidtation()
     {
-        bool isValid = true;
-        string message = string.Empty;
-        if (Manager.Instance.birthday == 0)
+        if (Manager.Instance.birthday <= 0)
         {
-            message += "-กรุณาใส่วันเกิด\n";
-            isValid = false;
-        }
-        if (isValid)
-        {
-            Validated();
+            Manager.Instance.DialogPopup("", "-กรุณาใส่วันเกิด\n", null, null);
         }
         else
         {
-            Manager.Instance.DialogPopup("", message, null, null);
+            Validated();
         }
     }
     void GenderValidation()
     {
-        bool isValid = true;
-        string message = string.Empty;
-        if (Manager.Instance.gender == string.Empty)
+        if (string.IsNullOrEmpty( Manager.Instance.gender))
         {
-            message += "-กรุณาใส่เพศ\n";
-            isValid = false;
-        }
-        if (isValid)
-        {
-            Validated();
+            Manager.Instance.DialogPopup("", "-กรุณาใส่เพศ\n", null, null);
         }
         else
         {
-            Manager.Instance.DialogPopup("", message, null, null);
+            Validated();
         }
     }
     void ZodiacValidation()
     {
-        bool isValid = true;
-        string message = string.Empty;
         if (Manager.Instance.zodiac <= 0)
         {
-            message += "-กรุณาใส่ราศี";
-            isValid = false;
-        }
-        if (isValid)
-        {
-            Validated();
+            Manager.Instance.DialogPopup("", "-กรุณาใส่ราศี", null, null);
         }
         else
         {
-            Manager.Instance.DialogPopup("", message, null, null);
+            Validated();
         }
     }
     void InterestValidation()
@@ -204,7 +214,7 @@ public class UserInfo : MonoBehaviour
             Loading.gameObject.SetActive(true);
             Manager.Instance.OnSyncSuccess = HandleSyncSuccess;
             Manager.Instance.OnSyncFailure = HandleSyncFailure;
-            Manager.Instance.UpdateUserInfo();
+            Manager.Instance.UpdateUserInfo(false);
         }
         else
         {
@@ -303,18 +313,6 @@ public class UserInfo : MonoBehaviour
     {
         SceneManager.LoadScene("Login");
     }
-    public void SetFirstName(string data)
-    {
-        Manager.Instance.firstName = data;
-    }
-    public void SetLastName(string data)
-    {
-        Manager.Instance.lastName = data;
-    }
-    public void SetInviteBy(string name)
-    {
-        Manager.Instance.inviteBy = name;
-    }
     public void SetBirthday(int data)
     {
         Manager.Instance.birthday = data;
@@ -322,14 +320,6 @@ public class UserInfo : MonoBehaviour
     public void SetGender(string data)
     {
         Manager.Instance.gender = data;
-    }
-    public void SetTel(string data)
-    {
-        int number;
-        if (int.TryParse(data, out number))
-        {
-            Manager.Instance.tel = number;
-        }
     }
     private void SetInterest(string data)
     {
