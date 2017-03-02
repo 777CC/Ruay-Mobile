@@ -89,7 +89,11 @@ public class UserInfo : MonoBehaviour
         {
             Manager.Instance.UpdateAppInfo(() =>
             {
-                interestController.Reload(Manager.Instance.AppInterests);
+                if(Manager.Instance.AppInterests != null)
+                {
+                    Debug.Log("AppInterests : " + Manager.Instance.AppInterests.Length);
+                    interestController.Reload(Manager.Instance.AppInterests);
+                }
             });
         }
         firstnameField.onValueChanged.AddListener(((text) => {

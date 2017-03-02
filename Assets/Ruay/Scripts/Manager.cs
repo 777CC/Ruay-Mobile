@@ -38,10 +38,12 @@ public class Manager : Singleton<Manager>
                 UnityInitializer.AttachToGameObject(Instance.gameObject);
             }
             SetAWS();
+#if !UNITY_EDITOR
             SceneManager.LoadScene("Login");
+#endif
         }
     }
-    #region UserData
+#region UserData
     private string[] UserInfoKeys = { "firstName", "lastName",  "tel", "birthday", "gender", "zodiac", "interests" };
     public string facebookId = string.Empty;
     public int satang = 0;
@@ -63,9 +65,9 @@ public class Manager : Singleton<Manager>
     [SerializeField]
     private List<Reward> rewards;
     public string[] Event;
-    #endregion
+#endregion
 
-    #region AppInfo
+#region AppInfo
     //Cognito
     const string appInfoUrl = @"https://s3-ap-southeast-1.amazonaws.com/ruay/Appinfo.json";
     //const string info = "Appinfo.json";
@@ -230,7 +232,7 @@ public class Manager : Singleton<Manager>
         yield return new WaitUntil(() => pages != null);
         getItem(Array.Find(items, p => p.id == id));
     }
-    #endregion
+#endregion
     public void Save()
     {
         string save = JsonUtility.ToJson(Instance);
@@ -303,7 +305,7 @@ public class Manager : Singleton<Manager>
         //    }
         //});   
     }
-    #region AWS
+#region AWS
     private Dataset userInfo;
     private Dataset UserInfo
     {
@@ -604,6 +606,8 @@ public class Manager : Singleton<Manager>
         SetMyRewardsPage();
         Save();
         AdsInit();
+
+        Debug.Log("UserInfo inviteName : " + UserInfo.Get("inviteName"));
         if (OnSyncSuccess != null)
         {
             OnSyncSuccess(string.Empty);
@@ -670,7 +674,7 @@ public class Manager : Singleton<Manager>
         //return ((int)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalMilliseconds).ToString();
         return (DateTime.UtcNow.Subtract(DateTime.MinValue.AddYears(1969)).TotalMilliseconds + updateTimeCount);
     }
-    #endregion
+#endregion
 
     public void DialogPopup(string header, string desc, Action onAccept, Action onCancel)
     {
@@ -689,7 +693,7 @@ public class Manager : Singleton<Manager>
         }
         return amount;
     }
-    #region App Service
+#region App Service
     public void BuyRound(string id, int number, int amount, Action onSuccess)
     {
         LambdaBuyTicket ticket = new LambdaBuyTicket();
@@ -774,9 +778,9 @@ public class Manager : Singleton<Manager>
             }
         });
     }
-    #endregion
+#endregion
 
-    #region Ads
+#region Ads
     GoogleMobileAdBanner adsBanner;
     void AdsInit()
     {
