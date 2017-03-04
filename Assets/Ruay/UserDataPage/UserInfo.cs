@@ -42,7 +42,18 @@ public class UserInfo : MonoBehaviour
         firstnameField.text = Manager.Instance.firstName;
         lastnameField.text = Manager.Instance.lastName;
         phoneNumberField.text = Manager.Instance.phoneNumber;
-        inviteByField.text = Manager.Instance.inviteBy;
+
+        if (!string.IsNullOrEmpty(Manager.Instance.inviteBy))
+        {
+            inviteByField.text = Manager.Instance.inviteBy;
+            inviteByField.readOnly = true;
+        }
+        else
+        {
+            inviteByField.onValueChanged.AddListener(((text) => {
+                Manager.Instance.inviteBy = text;
+            }));
+        }
         if (Manager.Instance.gender == "male")
         {
             maleToggle.isOn = true;
@@ -105,9 +116,7 @@ public class UserInfo : MonoBehaviour
         phoneNumberField.onValueChanged.AddListener(((text) => {
             Manager.Instance.phoneNumber = text;
         }));
-        inviteByField.onValueChanged.AddListener(((text) => {
-            Manager.Instance.inviteBy = text;
-        }));
+        
     }
     private void SetZodiac()
     {

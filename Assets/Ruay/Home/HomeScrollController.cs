@@ -145,6 +145,7 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
         }
         else if (pageName == "UserInfo")
         {
+            Manager.Instance.HideAd();
             SceneManager.LoadScene("UserInfoEditor");
         }
         else if (!string.IsNullOrEmpty(pageName))
@@ -270,9 +271,11 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
     }
     IEnumerator SetAd(HomeScrollCallView view)
     {
+        
         yield return new WaitForSeconds(0.2f);
         Manager.Instance.ShowAd(view.pos, (ad) =>
         {
+            Debug.Log("ShowAd" + (view != null));
             if (view != null)
             {
                 if (currentPage.cards.Count > view.dataIndex)
@@ -281,23 +284,26 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
                     if (currentPage.cards[view.dataIndex].viewType == CardType.Ad)
                     {
                         Manager.Instance.SetAdPosition(view.pos);
+                        adBanner = view;
                     }
                     else
                     {
                         Manager.Instance.HideAd();
+                        adBanner = null;
                     }
                 }
                 else
                 {
                     Manager.Instance.HideAd();
+                    adBanner = null;
                 }
             }
             else
             {
                 Manager.Instance.HideAd();
+                adBanner = null;
             }
         });
-        adBanner = view;
     }
     private void CellViewVisibilityChanged(EnhancedScrollerCellView cellView)
     {
@@ -307,12 +313,9 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
         // if the cell is active, we set its data, 
         // otherwise we will clear the image back to 
         // its default state
-        Debug.Log(cellView.dataIndex);
-        Debug.Log(currentPage.cards.Count);
         
         if(currentPage.cards.Count == 0)
         {
-            Debug.Log("HideAd");
             Manager.Instance.HideAd();
             adBanner = null;
         }

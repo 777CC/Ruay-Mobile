@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/AN_Res/AN_Res.iml" filepath="$PROJECT_DIR$/AN_Res/AN_Res.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Ruay.iml" filepath="$PROJECT_DIR$/Ruay.iml" />
+      <module fileurl="file://$PROJECT_DIR$/UnityShowAndroidStatusBar/UnityShowAndroidStatusBar.iml" filepath="$PROJECT_DIR$/UnityShowAndroidStatusBar/UnityShowAndroidStatusBar.iml" />
+    </modules>
+  </component>
+</project>

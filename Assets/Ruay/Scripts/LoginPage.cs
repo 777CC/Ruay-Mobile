@@ -120,6 +120,7 @@ public class LoginPage : MonoBehaviour {
     }
     private void HandleSyncSuccess(string e)
     {
+        Debug.Log("SyncSuccess : " + e + " : " + Manager.Instance.IsUserRegistered);
         if (Manager.Instance.IsUserRegistered)
         {
             SceneManager.LoadScene("Home");

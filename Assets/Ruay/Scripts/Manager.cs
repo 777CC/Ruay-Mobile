@@ -44,7 +44,7 @@ public class Manager : Singleton<Manager>
         }
     }
 #region UserData
-    private string[] UserInfoKeys = { "firstName", "lastName",  "tel", "birthday", "gender", "zodiac", "interests" };
+    private string[] UserInfoKeys = { "firstName", "lastName", "phoneNumber", "birthday", "gender", "zodiac", "interests" };
     public string facebookId = string.Empty;
     public int satang = 0;
     public string firstName = string.Empty;
@@ -551,7 +551,6 @@ public class Manager : Singleton<Manager>
         else
         {
             Debug.Log("No UpdateUserInfo : " + time + " : " + updateTime + updateTimeCount);
-            //OnSyncSuccess(string.Empty);
             HandleSyncSuccess(null, null);
         }
         Save();
@@ -581,6 +580,8 @@ public class Manager : Singleton<Manager>
         lastName = UserInfo.Get("lastName");
         gender = UserInfo.Get("gender");
         phoneNumber = UserInfo.Get("phoneNumber");
+        inviteBy = UserInfo.Get("inviteBy");
+        inviteName = UserInfo.Get("inviteName");
         int date;
         if (int.TryParse(UserInfo.Get("birthday"), out date))
         {
@@ -605,13 +606,11 @@ public class Manager : Singleton<Manager>
         SetMyTicketsPage();
         SetMyRewardsPage();
         Save();
-        AdsInit();
-
-        Debug.Log("UserInfo inviteName : " + UserInfo.Get("inviteName"));
         if (OnSyncSuccess != null)
         {
             OnSyncSuccess(string.Empty);
         }
+        AdsInit();
     }
     private void HandleSyncFailure(object sender, SyncFailureEventArgs e)
     {
@@ -827,6 +826,10 @@ public class Manager : Singleton<Manager>
             {
                 adsBanner.Show();
                 adsBanner.SetBannerPosition((int)(rect.x + ((rect.width - adsBanner.width) / 2)), (int)(rect.y + ((rect.height - adsBanner.height) / 2)));
+                if(onComplete!= null)
+                {
+                    onComplete(adsBanner);
+                }
             }
             else
             {
