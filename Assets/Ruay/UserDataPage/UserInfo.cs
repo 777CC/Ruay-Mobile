@@ -72,7 +72,7 @@ public class UserInfo : MonoBehaviour
         int zodiacIndex = Manager.Instance.zodiac;
         if (zodiacIndex > 0)
         {
-            if (zodiacToggles.Length > zodiacIndex)
+            if (zodiacToggles.Length >= zodiacIndex)
             {
                 zodiacToggles[zodiacIndex - 1].isOn = true;
             }

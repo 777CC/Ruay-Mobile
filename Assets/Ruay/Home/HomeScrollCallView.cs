@@ -77,8 +77,14 @@ public class HomeScrollCallView : EnhancedScrollerCellView{
             case CardType.NameOnlyRight:
                 SetView(false, data.photo, false, TextAnchor.MiddleRight);
                 break;
-            case CardType.NameWithBG:
+            case CardType.NameWithBGCenter:
+                SetView(true, data.photo, false, TextAnchor.MiddleCenter);
+                break;
+            case CardType.NameWithBGLeft:
                 SetView(true, data.photo, false, TextAnchor.MiddleLeft);
+                break;
+            case CardType.NameWithBGRight:
+                SetView(true, data.photo, false, TextAnchor.MiddleRight);
                 break;
             case CardType.NameWithLine:
                 SetView(false, data.photo, true, TextAnchor.MiddleLeft);

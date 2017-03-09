@@ -4,6 +4,7 @@ using UnityEngine.UI;
 using EnhancedUI.EnhancedScroller;
 using EnhancedUI;
 using System.Collections;
+using Facebook.Unity;
 
 public struct view
 {
@@ -14,6 +15,7 @@ public struct view
 [RequireComponent(typeof(EnhancedScroller))]
 public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
 {
+    private Canvas canvas;
     [SerializeField]
     private CanvasGroup homeCanvasGroup;
     private EnhancedScroller scroller;
@@ -28,7 +30,7 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
     void Awake()
     {
         Screen.fullScreen = false;
-
+        canvas = FindObjectOfType<Canvas>();
         scroller = GetComponent<EnhancedScroller>();
         // create a new data list for the slots
         //card = new SmallList<Card>();
@@ -148,6 +150,18 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
             Manager.Instance.HideAd();
             SceneManager.LoadScene("UserInfoEditor");
         }
+        else if (pageName == "SetInviteName")
+        {
+            Popup invitePopup = Instantiate(Resources.Load<GameObject>("SetInviteNamePopup")).GetComponent<Popup>();
+            Popup(invitePopup, "แก้ไขข้อมูล");
+        }
+        else if (pageName == "Quit")
+        {
+            FB.LogOut();
+            PlayerPrefs.DeleteAll();
+            Caching.CleanCache();
+            Application.Quit();
+        }
         else if (!string.IsNullOrEmpty(pageName))
         {
             Manager.Instance.GetPageById(pageName, NextPage);
@@ -157,29 +171,25 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
     void ShowItem(string prefabName,Item r,bool isItem,Texture tex)
     {
         RoundPopup round = Instantiate(Resources.Load<GameObject>(prefabName)).GetComponent<RoundPopup>();
-        round.transform.SetParent(FindObjectOfType<Canvas>().transform, false);
-        round.transform.SetSiblingIndex(homeCanvasGroup.transform.GetSiblingIndex() + 1);
         round.SetItem(r, isItem,tex);
         Popup(round, r.name);
     }
     void ShowTicketDesc(string prefabName, Ticket ticket,Item round, Texture tex)
     {
         ItemDescPopup popup = Instantiate(Resources.Load<GameObject>(prefabName)).GetComponent<ItemDescPopup>();
-        popup.transform.SetParent(FindObjectOfType<Canvas>().transform, false);
-        popup.transform.SetSiblingIndex(homeCanvasGroup.transform.GetSiblingIndex() + 1);
         popup.SetTicket(round ,ticket, tex);
         Popup(popup, round.name);
     }
     void ShowRewardDesc(string prefabName, Reward reward, Item item,Texture tex)
     {
         ItemDescPopup popup = Instantiate(Resources.Load<GameObject>(prefabName)).GetComponent<ItemDescPopup>();
-        popup.transform.SetParent(FindObjectOfType<Canvas>().transform, false);
-        popup.transform.SetSiblingIndex(homeCanvasGroup.transform.GetSiblingIndex() + 1);
         popup.SetReward(item, reward, tex);
         Popup(popup, item.name);
     }
     void Popup(Popup popup, string head)
     {
+        popup.transform.SetParent(canvas.transform, false);
+        popup.transform.SetSiblingIndex(homeCanvasGroup.transform.GetSiblingIndex() + 1);
         header.SetData(popup.ContentScroll, head, false, true, () =>
         {
             popup.Back();

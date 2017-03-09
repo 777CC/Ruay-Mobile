@@ -60,27 +60,31 @@ public class PageHeader : MonoBehaviour
         {
             back.gameObject.SetActive(false);
         }
-        contentRect = scroll;
-        contentRect.onValueChanged.AddListener((pos)=> {
-            if (contentRect.content.position.y >= startY)
+        if (scroll != null)
+        {
+            contentRect = scroll;
+            contentRect.onValueChanged.AddListener((pos) =>
             {
-                //me.SetPositionAndRotation(new Vector3(me.position.x, oldmeY - (oldcontentY - contentRect.content.position.y)), Quaternion.identity);
-                me.position = new Vector2(me.position.x, oldmeY - (oldcontentY - contentRect.content.position.y));
-            }
-            else
-            {
-                me.anchoredPosition = startPos;
-            }
-            if (me.anchoredPosition.y < startPos.y)
-            {
-                me.anchoredPosition = startPos;
-            }
-            else if (me.anchoredPosition.y > me.rect.height)
-            {
-                me.anchoredPosition = new Vector2(startPos.x, me.rect.height);
-            }
-            oldmeY = me.position.y;
-            oldcontentY = contentRect.content.position.y;
-        });
+                if (contentRect.content.position.y >= startY)
+                {
+                    //me.SetPositionAndRotation(new Vector3(me.position.x, oldmeY - (oldcontentY - contentRect.content.position.y)), Quaternion.identity);
+                    me.position = new Vector2(me.position.x, oldmeY - (oldcontentY - contentRect.content.position.y));
+                }
+                else
+                {
+                    me.anchoredPosition = startPos;
+                }
+                if (me.anchoredPosition.y < startPos.y)
+                {
+                    me.anchoredPosition = startPos;
+                }
+                else if (me.anchoredPosition.y > me.rect.height)
+                {
+                    me.anchoredPosition = new Vector2(startPos.x, me.rect.height);
+                }
+                oldmeY = me.position.y;
+                oldcontentY = contentRect.content.position.y;
+            });
+        }
     }
 }

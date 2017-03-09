@@ -10,10 +10,12 @@ public enum CardType
     NameOnlyLeft = 5,
     NameOnlyCenter = 6,
     NameOnlyRight = 7,
-    NameWithBG = 8,
+    NameWithBGLeft = 8,
     NameWithLine = 9,
     Header = 10,
     Ad = 11,
+    NameWithBGCenter = 12,
+    NameWithBGRight = 13,
 }//706
 [Serializable]
 public class Page{

@@ -105,6 +105,8 @@ public class Manager : Singleton<Manager>
         }
     }
     public const string HomePageName = "Home";
+    const string SettingPageId = "Setting";
+    const string SettingPageName = "การตั้งค่า";
     const string MyTicketsPageId = "MyTickets";
     const string MyTicketsPageName = "ฉลากของคุณ";
     const string MyRewardsPageId = "MyRewards";
@@ -325,6 +327,7 @@ public class Manager : Singleton<Manager>
             {
                 JsonUtility.FromJsonOverwrite(data, Instance);
                 SetPages();
+                SetSettingPage();
                 SetMyTicketsPage();
                 SetMyRewardsPage();
                 if (callback != null)
@@ -357,6 +360,58 @@ public class Manager : Singleton<Manager>
                 page.cards.Insert(0, BackPageCard(page.name));
             }
         });
+    }
+    public void SetSettingPage()
+    {
+        Page page = pages.Find(p => p.id == SettingPageId);
+        if (page == null)
+        {
+            page = new Page();
+        }
+        page.id = SettingPageId;
+        page.name = SettingPageName;
+        page.cards = new List<Card>();
+        page.cards.Add(BackPageCard(page.name));
+        Card userInfoCard = new Card();
+        userInfoCard.name = "แก้ไขข้อมูลของคุณ";
+        userInfoCard.nextPage = "UserInfo";
+        userInfoCard.viewType = CardType.NameWithBGCenter;
+        page.cards.Add(userInfoCard);
+        //invite head card.
+        Card inviteHeadCard = new Card();
+        inviteHeadCard.name = "ชื่อผู้เชิญของคุณ :";
+        inviteHeadCard.viewType = CardType.NameOnlyLeft;
+        page.cards.Add(inviteHeadCard);
+        //invite name card.
+        Card inviteValCard = new Card();
+        if (string.IsNullOrEmpty(inviteName))
+        {
+            inviteValCard.name = "ตั้งชื่อผู้เชิญ กดแก้ไข";
+        }
+        else
+        {
+            inviteValCard.name = inviteName;
+        }
+        inviteValCard.viewType = CardType.NameOnlyCenter;
+        page.cards.Add(inviteValCard);
+        //invite name change card.
+        Card inviteChangeCard = new Card();
+        inviteChangeCard.name = "แก้ไข";
+        inviteChangeCard.nextPage = "SetInviteName";
+        inviteChangeCard.viewType = CardType.NameWithBGCenter;
+        page.cards.Add(inviteChangeCard);
+        page.cards.Add(BackPageCard(string.Empty));
+        page.cards.Add(BackPageCard(string.Empty));
+        //Quit card.
+        Card quitCard = new Card();
+        quitCard.name = "ออกจากระบบ";
+        quitCard.nextPage = "Quit";
+        quitCard.viewType = CardType.NameWithBGCenter;
+        page.cards.Add(quitCard);
+        if (!pages.Contains(page))
+        {
+            pages.Add(page);
+        }
     }
     void SetMyTicketsPage()
     {
@@ -565,11 +620,12 @@ public class Manager : Singleton<Manager>
     {
         if (e != null)
         {
-            double time;
-            if (double.TryParse(UserInfo.Get("updateTime"), out time))
-            {
-                updateTime = time;
-            }
+            //double time;
+            //if (double.TryParse(UserInfo.Get("updateTime"), out time))
+            //{
+            //    updateTime = time;
+            //}
+            updateTime = GetUnixTime();
         }
         int s;
         if (int.TryParse(UserInfo.Get("satang"), out s))
@@ -581,7 +637,7 @@ public class Manager : Singleton<Manager>
         gender = UserInfo.Get("gender");
         phoneNumber = UserInfo.Get("phoneNumber");
         inviteBy = UserInfo.Get("inviteBy");
-        inviteName = UserInfo.Get("inviteName");
+        //inviteName = UserInfo.Get("inviteName");
         int date;
         if (int.TryParse(UserInfo.Get("birthday"), out date))
         {
@@ -603,9 +659,10 @@ public class Manager : Singleton<Manager>
         {
             rewards = new List<Reward>(rw);
         }
+        Save();
+        SetSettingPage();
         SetMyTicketsPage();
         SetMyRewardsPage();
-        Save();
         if (OnSyncSuccess != null)
         {
             OnSyncSuccess(string.Empty);
@@ -714,7 +771,6 @@ public class Manager : Singleton<Manager>
                 {
                     tickets.Add(newTicket);
                     SetMyTicketsPage();
-
                     satang -= Array.Find(rounds, (r) => r.id == newTicket.roundId).price * newTicket.amount;
                     Save();
                     if (onSuccess != null)

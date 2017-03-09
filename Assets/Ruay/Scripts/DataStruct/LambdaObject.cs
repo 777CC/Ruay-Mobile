@@ -1,5 +1,10 @@
-﻿using System.Collections;
-using System;
+﻿using System;
+[Serializable]
+public struct LambdaSetInviteName
+{
+    public string oldInviteName;
+    public string newInviteName;
+}
 [Serializable]
 public struct LambdaBuyTicket
 {
