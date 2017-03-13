@@ -234,7 +234,7 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
         float height;
         switch (currentPage.cards[dataIndex].viewType)
         {
-            case CardType.PhotoWithName:
+            case CardType.PhotoWithNameCenter:
                 height = 706;
                 break;
             case CardType.PhotoOnly:

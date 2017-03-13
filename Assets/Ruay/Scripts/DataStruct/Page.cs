@@ -3,19 +3,22 @@ using System.Collections.Generic;
 [Serializable]
 public enum CardType
 {
-    PhotoWithName = 1,
-    PhotoOnly = 2,
-    IconWithName = 3,
-    IconOnly = 4,
-    NameOnlyLeft = 5,
-    NameOnlyCenter = 6,
-    NameOnlyRight = 7,
-    NameWithBGLeft = 8,
-    NameWithLine = 9,
-    Header = 10,
-    Ad = 11,
-    NameWithBGCenter = 12,
-    NameWithBGRight = 13,
+    PhotoWithNameCenter = 1,
+    PhotoWithNameLeft = 2,
+    PhotoWithNameRight = 3,
+    PhotoOnly = 4,
+    IconWithName = 5,
+    IconOnly = 6,
+    NameOnlyLeft = 7,
+    NameOnlyCenter = 8,
+    NameOnlyRight = 9,
+    NameWithBGLeft = 10,
+    NameWithLine = 11,
+    Header = 12,
+    Ad = 13,
+    NameWithBGCenter = 14,
+    NameWithBGRight = 15,
+    Name2Side = 16
 }//706
 [Serializable]
 public class Page{
@@ -30,4 +33,6 @@ public struct Card
     public string nextPage;
     public CardType viewType;
     public string photo;
+    public double startTime;
+    public double endTime;
 }

@@ -11,8 +11,8 @@ public struct Item
     public int limit;
     public string discountPercent;
     public string discountPrice;
-    public int startDate;
-    public int expireDate;
+    public double startDate;
+    public double expireDate;
     public Choice[] choices;
 
 }

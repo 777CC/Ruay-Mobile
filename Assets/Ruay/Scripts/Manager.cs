@@ -343,8 +343,20 @@ public class Manager : Singleton<Manager>
     }
     void SetPages()
     {
+        double timeNow = GetUnixTime();
         pages.ForEach((page) =>
         {
+            //Debug.Log(JsonUtility.ToJson(page));
+            page.cards.ForEach((card) => {
+                Debug.Log(JsonUtility.ToJson(card));
+                if (card.startTime != 0 && card.endTime != 0)
+                {
+                    if (card.startTime > timeNow || card.endTime < timeNow)
+                    {
+                        page.cards.Remove(card);
+                    }
+                }
+            });
             if (page.id == HomePageName)
             {
                 Card ad = new Card();
