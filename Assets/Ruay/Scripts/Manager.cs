@@ -444,7 +444,24 @@ public class Manager : Singleton<Manager>
                 {
                     Card card = new Card();
                     Item round = Array.Find(rounds, r => r.id == tickets[i].roundId);
-                    card.name = round.name;
+                    //card.name = round.name;
+                    if (round.choices != null)
+                    {
+                        Choice choice = Array.Find(round.choices, c => c.value == tickets[i].reserveNumber);
+                        if (!string.IsNullOrEmpty(choice.name))
+                        {
+                            card.name = choice.name;
+                        }
+                        else
+                        {
+                            card.name = tickets[i].reserveNumber.ToString();
+                        }
+                    }
+                    else
+                    {
+                        card.name = tickets[i].reserveNumber.ToString();
+                    }
+                    card.name += " " + (string.IsNullOrEmpty(tickets[i].announced) ? "ยังไม่ประกาศ" : tickets[i].announced);
                     card.nextPage = "Ticket" + i;
                     card.viewType = CardType.NameWithLine;
                     page.cards.Add(card);

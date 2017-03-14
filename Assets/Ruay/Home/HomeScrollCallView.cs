@@ -112,7 +112,18 @@ public class HomeScrollCallView : EnhancedScrollerCellView{
     }
     void SetPhoto(string name,Texture tex)
     {
-        photo.texture = tex;
+        if (photo.texture == null)
+        {
+            photo.texture = tex;
+        }
+        else
+        {
+            if (photo.texture != tex)
+            {
+                Destroy(photo.texture);
+                photo.texture = tex;
+            }
+        }
     }
     void SetView(bool isBG,string photoName,bool isLine, TextAnchor nameAli)
     {

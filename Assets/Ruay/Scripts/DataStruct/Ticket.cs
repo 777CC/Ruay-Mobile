@@ -6,5 +6,5 @@ public struct Ticket
     public string roundId;
     public int reserveNumber;
     public int amount;
-    public bool announced;
+    public string announced;
 }

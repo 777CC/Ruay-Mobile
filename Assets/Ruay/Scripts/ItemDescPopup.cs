@@ -12,19 +12,26 @@ public class ItemDescPopup : RoundPopup {
     private Text Description;
     public void SetTicket(Item item,Ticket ticket, Texture tex)
     {
-        Choice choice = Array.Find(item.choices, c => c.value == ticket.reserveNumber);
-        string choiceName = choice.name;
-        if (string.IsNullOrEmpty(choiceName))
+        if (item.choices != null)
         {
-            if (!string.IsNullOrEmpty(round.id))
+            Choice choice = Array.Find(item.choices, c => c.value == ticket.reserveNumber);
+            string choiceName = choice.name;
+            if (string.IsNullOrEmpty(choiceName))
             {
-                if (round.id[0] == 'A')
+                if (!string.IsNullOrEmpty(round.id))
                 {
-                    choiceName = ticket.reserveNumber.ToString("000000");
+                    if (round.id[0] == 'A')
+                    {
+                        choiceName = ticket.reserveNumber.ToString("000000");
+                    }
                 }
             }
+            SetView(tex, item.name, ticket.amount, choiceName, item.desc);
         }
-        SetView(tex,item.name,ticket.amount, choiceName,item.desc);
+        else
+        {
+            SetView(tex, item.name, ticket.amount, ticket.reserveNumber.ToString(), item.desc);
+        }
     }
     public void SetReward(Item item, Reward reward,Texture tex)
     {
@@ -33,7 +40,7 @@ public class ItemDescPopup : RoundPopup {
     }
     void SetView(Texture tex,string name,int amount,string choice, string desc)
     {
-        if (tex)
+        if (tex && photo != null)
         {
             photo.gameObject.SetActive(true);
             photo.texture = tex;
@@ -42,15 +49,15 @@ public class ItemDescPopup : RoundPopup {
         {
             photo.gameObject.SetActive(false);
         }
-        if (!string.IsNullOrEmpty(name))
+        if (!string.IsNullOrEmpty(name) && Name != null)
         {
             Name.text = name;
         }
-        if (int.TryParse(amount.ToString(), out this.amount))
+        if (int.TryParse(amount.ToString(), out this.amount) && amountText != null)
         {
             amountText.text = this.amount.ToString();
         }
-        if (!string.IsNullOrEmpty(choice))
+        if (!string.IsNullOrEmpty(choice) && ChoiceText != null)
         {
             ChoiceText.text = choice;
         }
@@ -58,10 +65,19 @@ public class ItemDescPopup : RoundPopup {
         {
             ChoiceText.gameObject.SetActive(false);
         }
-        if (!string.IsNullOrEmpty(desc))
+        if (!string.IsNullOrEmpty(desc) && Description != null)
         {
             Description.text = desc;
         }
         Show();
+    }
+    public override void Back()
+    {
+        base.Back();
+        Debug.Log("BackDestroy");
+        if (photo != null)
+        {
+            Destroy(photo);
+        }
     }
 }
