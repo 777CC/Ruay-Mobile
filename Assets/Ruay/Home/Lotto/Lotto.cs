@@ -12,6 +12,8 @@ public class Lotto : RoundPopup {
     private int minRandom = -500000;
     [SerializeField]
     private int maxRandom = 500000;
+    [SerializeField]
+    private Text desc;
     public override void Start()
     {
         base.Start();
@@ -36,6 +38,14 @@ public class Lotto : RoundPopup {
                 number = numberBuf.ToString();
                 break;
             }
+        }
+    }
+    public override void SetItem(Item r, bool isItem, Texture tex)
+    {
+        base.SetItem(r, isItem, tex);
+        if (!string.IsNullOrEmpty(r.desc))
+        {
+            desc.text = r.desc;
         }
     }
     public void Buy()
