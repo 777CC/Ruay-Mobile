@@ -96,13 +96,13 @@ public class RoundChoice : RoundPopup
         if (isItem)
         {
             Manager.Instance.BuyItem(round.id, currentChoice.value, amount,()=> {
-                Back();
+                //Back();
             });
         }
         else
         {
             Manager.Instance.BuyRound(round.id, currentChoice.value, amount,()=> {
-                Back();
+                //Back();
             });
         }
     }

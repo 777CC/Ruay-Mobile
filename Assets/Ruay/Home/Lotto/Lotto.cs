@@ -44,7 +44,7 @@ public class Lotto : RoundPopup {
         if (int.TryParse(number,out n))
         {
             Manager.Instance.BuyRound(round.id, n, amount,() => {
-                Back();
+                //Back();
             });
         }
     }

@@ -696,7 +696,7 @@ public class Manager : Singleton<Manager>
         {
             OnSyncSuccess(string.Empty);
         }
-        AdsInit();
+        //AdsInit();
     }
     private void HandleSyncFailure(object sender, SyncFailureEventArgs e)
     {
