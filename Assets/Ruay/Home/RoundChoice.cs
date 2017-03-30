@@ -44,8 +44,8 @@ public class RoundChoice : RoundPopup
             }
             else if (r.choices.Length == 2)
             {
-                Choice1.name = r.choices[0].name;
-                Choice2.name = r.choices[1].name;
+                Choice1.name = r.choices[0].choiceName;
+                Choice2.name = r.choices[1].choiceName;
             }
             else if (r.choices.Length > 2)
             {
@@ -62,7 +62,7 @@ public class RoundChoice : RoundPopup
                         go = Instantiate(MultiChoice, MultiChoice.transform.parent, false);
                     }
                     go.transform.SetSiblingIndex(MultiChoice.transform.GetSiblingIndex() + i);
-                    go.GetComponentInChildren<Text>().text = r.choices[i].name;
+                    go.GetComponentInChildren<Text>().text = r.choices[i].choiceName;
                     int index = i;
                     go.GetComponent<Button>().onClick.AddListener(() =>
                     {
@@ -88,20 +88,20 @@ public class RoundChoice : RoundPopup
     void Choose(Choice c)
     {
         currentChoice = c;
-        ConfirmHeader.text = currentChoice.name;
+        ConfirmHeader.text = currentChoice.choiceName;
         Confirmation();
     }
     public void Buy()
     {
         if (isItem)
         {
-            Manager.Instance.BuyItem(round.id, currentChoice.value, amount,()=> {
+            Manager.Instance.BuyItem(round.id, currentChoice.choiceValue, amount,()=> {
                 //Back();
             });
         }
         else
         {
-            Manager.Instance.BuyRound(round.id, currentChoice.value, amount,()=> {
+            Manager.Instance.BuyRound(round.id, currentChoice.choiceValue, amount,()=> {
                 //Back();
             });
         }

@@ -28,6 +28,7 @@ public class Manager : Singleton<Manager>
             {
                 Debug.Log("Load user info from PlayerPrefs. \n" + PlayerPrefs.GetString(PrefsName));
                 JsonUtility.FromJsonOverwrite(PlayerPrefs.GetString(PrefsName), Instance);
+                ShowAd(Rect.zero,null);
             }
             else
             {
@@ -44,9 +45,10 @@ public class Manager : Singleton<Manager>
         }
     }
 #region UserData
-    private string[] UserInfoKeys = { "firstName", "lastName", "phoneNumber", "birthday", "gender", "zodiac", "interests" };
+    private string[] UserInfoKeys = { "fbProfilePicture", "firstName", "lastName", "phoneNumber", "birthday", "gender", "zodiac", "interests" };
     public string facebookId = string.Empty;
     public int satang = 0;
+    public string fbProfilePicture = string.Empty;
     public string firstName = string.Empty;
     public string lastName = string.Empty;
     public string inviteBy = string.Empty;
@@ -307,6 +309,15 @@ public class Manager : Singleton<Manager>
         //    }
         //});   
     }
+    public void ClearUserInfo()
+    {
+        FB.LogOut();
+        PlayerPrefs.DeleteAll();
+        Caching.CleanCache();
+        Manager newManager = new Manager();
+        JsonUtility.FromJsonOverwrite(JsonUtility.ToJson(newManager), Instance);
+    }
+
 #region AWS
     private Dataset userInfo;
     private Dataset UserInfo
@@ -369,7 +380,7 @@ public class Manager : Singleton<Manager>
             //if (page.name != HomePageName && page.name != MyTicketsName && page.name != MyRewardsName)
             if (page.id != MyTicketsPageId && page.id != MyRewardsPageId)
             {
-                page.cards.Insert(0, BackPageCard(page.name));
+                page.cards.Insert(0, BackPageCard(page.title));
             }
         });
     }
@@ -381,34 +392,34 @@ public class Manager : Singleton<Manager>
             page = new Page();
         }
         page.id = SettingPageId;
-        page.name = SettingPageName;
+        page.title = SettingPageName;
         page.cards = new List<Card>();
-        page.cards.Add(BackPageCard(page.name));
+        page.cards.Add(BackPageCard(page.title));
         Card userInfoCard = new Card();
-        userInfoCard.name = "แก้ไขข้อมูลของคุณ";
+        userInfoCard.title = "แก้ไขข้อมูลของคุณ";
         userInfoCard.nextPage = "UserInfo";
         userInfoCard.viewType = CardType.NameWithBGCenter;
         page.cards.Add(userInfoCard);
         //invite head card.
         Card inviteHeadCard = new Card();
-        inviteHeadCard.name = "ชื่อผู้เชิญของคุณ :";
+        inviteHeadCard.title = "ชื่อผู้เชิญของคุณ :";
         inviteHeadCard.viewType = CardType.NameOnlyLeft;
         page.cards.Add(inviteHeadCard);
         //invite name card.
         Card inviteValCard = new Card();
         if (string.IsNullOrEmpty(inviteName))
         {
-            inviteValCard.name = "ตั้งชื่อผู้เชิญ กดแก้ไข";
+            inviteValCard.title = "ตั้งชื่อผู้เชิญ กดแก้ไข";
         }
         else
         {
-            inviteValCard.name = inviteName;
+            inviteValCard.title = inviteName;
         }
         inviteValCard.viewType = CardType.NameOnlyCenter;
         page.cards.Add(inviteValCard);
         //invite name change card.
         Card inviteChangeCard = new Card();
-        inviteChangeCard.name = "แก้ไข";
+        inviteChangeCard.title = "แก้ไข";
         inviteChangeCard.nextPage = "SetInviteName";
         inviteChangeCard.viewType = CardType.NameWithBGCenter;
         page.cards.Add(inviteChangeCard);
@@ -416,7 +427,7 @@ public class Manager : Singleton<Manager>
         page.cards.Add(BackPageCard(string.Empty));
         //Quit card.
         Card quitCard = new Card();
-        quitCard.name = "ออกจากระบบ";
+        quitCard.title = "ออกจากระบบ";
         quitCard.nextPage = "Quit";
         quitCard.viewType = CardType.NameWithBGCenter;
         page.cards.Add(quitCard);
@@ -433,9 +444,9 @@ public class Manager : Singleton<Manager>
             page = new Page();
         }
         page.id = MyTicketsPageId;
-        page.name = MyTicketsPageName;
+        page.title = MyTicketsPageName;
         page.cards = new List<Card>();
-        page.cards.Add(BackPageCard(page.name));
+        page.cards.Add(BackPageCard(page.title));
         if (tickets != null)
         {
             if (tickets.Count > 0)
@@ -447,21 +458,21 @@ public class Manager : Singleton<Manager>
                     //card.name = round.name;
                     if (round.choices != null)
                     {
-                        Choice choice = Array.Find(round.choices, c => c.value == tickets[i].reserveNumber);
-                        if (!string.IsNullOrEmpty(choice.name))
+                        Choice choice = Array.Find(round.choices, c => c.choiceValue == tickets[i].reserveNumber);
+                        if (!string.IsNullOrEmpty(choice.choiceName))
                         {
-                            card.name = choice.name;
+                            card.title = choice.choiceName;
                         }
                         else
                         {
-                            card.name = tickets[i].reserveNumber.ToString();
+                            card.title = tickets[i].reserveNumber.ToString();
                         }
                     }
                     else
                     {
-                        card.name = tickets[i].reserveNumber.ToString();
+                        card.title = tickets[i].reserveNumber.ToString();
                     }
-                    card.name += " " + (string.IsNullOrEmpty(tickets[i].announced) ? "ยังไม่ประกาศ" : tickets[i].announced);
+                    card.title += " " + (string.IsNullOrEmpty(tickets[i].announced) ? "ยังไม่ประกาศ" : tickets[i].announced);
                     card.nextPage = "Ticket" + i;
                     card.viewType = CardType.NameWithLine;
                     page.cards.Add(card);
@@ -484,7 +495,7 @@ public class Manager : Singleton<Manager>
     void SetEmptyTicket(List<Card> cards)
     {
         Card card = new Card();
-        card.name = "ไม่มีอะ ลองแลกสลากดูซิ";
+        card.title = "ไม่มีอะ ลองแลกสลากดูซิ";
         card.viewType = CardType.NameOnlyRight;
         cards.Add(card);
     }
@@ -496,9 +507,9 @@ public class Manager : Singleton<Manager>
             page = new Page();
         }
         page.id = MyRewardsPageId;
-        page.name = MyRewardsPageName;
+        page.title = MyRewardsPageName;
         page.cards = new List<Card>();
-        page.cards.Add(BackPageCard(page.name));
+        page.cards.Add(BackPageCard(page.title));
         if (rewards != null)
         {
             if (rewards.Count > 0)
@@ -507,7 +518,7 @@ public class Manager : Singleton<Manager>
                 {
                     Card card = new Card();
                     Item round = Array.Find(items, r => r.id == rewards[i].itemId);
-                    card.name = round.name;
+                    card.title = round.title;
                     card.nextPage = "Reward" + i;
                     card.viewType = CardType.NameWithLine;
                     page.cards.Add(card);
@@ -530,14 +541,14 @@ public class Manager : Singleton<Manager>
     void SetEmptyReward(List<Card> cards)
     {
         Card card = new Card();
-        card.name = "ไม่มีอะ ลองแลกของขวัญดูน่ะ";
+        card.title = "ไม่มีอะ ลองแลกของขวัญดูน่ะ";
         card.viewType = CardType.NameOnlyRight;
         cards.Add(card);
     }
     Card BackPageCard(string pageName)
     {
         Card card = new Card();
-        card.name = pageName;
+        card.title = pageName;
         card.viewType = CardType.Header;
         //card.nextPage = "Back";
         card.nextPage = string.Empty;
@@ -614,6 +625,7 @@ public class Manager : Singleton<Manager>
             Debug.Log("tel " + phoneNumber + " + " + birthday);
             PutToDataset("updateTime", time.ToString("0"));
             PutToDataset("facebookId", facebookId);
+            PutToDataset("fbProfilePicture", fbProfilePicture);
             PutToDataset("firstName", firstName);
             PutToDataset("lastName", lastName);
             PutToDataset("phoneNumber", phoneNumber);
@@ -639,7 +651,7 @@ public class Manager : Singleton<Manager>
         }
         Save();
     }
-    private void PutToDataset(string key, string val)
+    public void PutToDataset(string key, string val)
     {
         if (!string.IsNullOrEmpty(val)) {
             UserInfo.Put(key, val);
@@ -661,6 +673,7 @@ public class Manager : Singleton<Manager>
         {
             satang = s;
         }
+        fbProfilePicture = UserInfo.Get("fbProfilePicture");
         firstName = UserInfo.Get("firstName");
         lastName = UserInfo.Get("lastName");
         gender = UserInfo.Get("gender");

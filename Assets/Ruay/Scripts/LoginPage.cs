@@ -4,6 +4,9 @@ using UnityEngine.SceneManagement;
 using System.Collections;
 using System.Collections.Generic;
 using Facebook.Unity;
+using System.IO;
+using System;
+
 //using UnityEngine.Advertisements;
 
 public class LoginPage : MonoBehaviour {
@@ -15,8 +18,6 @@ public class LoginPage : MonoBehaviour {
     //private CanvasGroup popupAlpha;
     [SerializeField]
     private Text statusMessage;
-    [SerializeField]
-    private RectTransform checkerImage;
     public void Start()
     {
         //For android status bar and navigation bar
@@ -76,7 +77,8 @@ public class LoginPage : MonoBehaviour {
         {
             if(FB.IsLoggedIn)
             {
-                LoginCognito();
+                FB.API("/me/picture?redirect=false", HttpMethod.GET, ProfilePhotoCallback);
+                //LoginCognito();
             }
             else
             {
@@ -99,15 +101,16 @@ public class LoginPage : MonoBehaviour {
         }
         else
         {
-            //foreach (KeyValuePair<string, object> entry in result.ResultDictionary)
-            //{
-            //    Debug.Log(entry.Key + " : " + entry.Value);
-            //}
+            foreach (KeyValuePair<string, object> entry in result.ResultDictionary)
+            {
+                Debug.Log(entry.Key + " : " + entry.Value);
+            }
             if (result.ResultDictionary.ContainsKey("user_id"))
             {
                 Manager.Instance.facebookId = result.ResultDictionary["user_id"].ToString();
             }
-            LoginCognito();
+            FB.API("/me/picture?redirect=false", HttpMethod.GET, ProfilePhotoCallback);
+            //LoginCognito();
         }
     }
     private void LoginCognito()
@@ -134,6 +137,7 @@ public class LoginPage : MonoBehaviour {
     {
         popup.gameObject.SetActive(true);
         statusMessage.text = "กรุณาลองใหม่อีกครั้ง\n" + exception;
+        Manager.Instance.ClearUserInfo();
         popup.GetComponentInChildren<Button>().onClick.AddListener(() => {
             SceneManager.LoadScene("Login");
         });
@@ -150,6 +154,34 @@ public class LoginPage : MonoBehaviour {
         popup.GetComponentInChildren<Button>().onClick.AddListener(() => {
             SceneManager.LoadScene("Login");
         });
+    }
+    private void ProfilePhotoCallback(IGraphResult result)
+    {
+        if (string.IsNullOrEmpty(result.Error) && !result.Cancelled)
+        {
+            IDictionary data = result.ResultDictionary["data"] as IDictionary;
+            string photoURL = data["url"] as string;
+
+            //StartCoroutine(fetchProfilePic(photoURL));
+            //Debug.Log("photourl : " + photoURL);
+            
+            Uri uri = new Uri(photoURL);
+            //if (uri.IsFile)
+            {
+                string filename = Path.GetFileName(uri.LocalPath);
+                string[] removeQueryParameter =  filename.Split('?');
+                string profilephoto = removeQueryParameter.Length > 1 ? removeQueryParameter[0] : filename;
+                Debug.Log(Manager.Instance.fbProfilePicture + " : " + removeQueryParameter[0]);
+                if (Manager.Instance.fbProfilePicture != profilephoto)
+                {
+                    Debug.Log("photofilename : " + removeQueryParameter[0]);
+                    Manager.Instance.fbProfilePicture = profilephoto;
+                    Manager.Instance.updateTime = 0;
+                    //Manager.Instance.PutToDataset("fbProfilePicture", profilephoto);
+                }
+            }
+            LoginCognito();
+        }
     }
     //public void ShowRewardedAd()
     //{

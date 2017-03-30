@@ -47,9 +47,9 @@ public class RoundPopup : Popup {
         {
             Manager.Instance.DialogPopup("สตางค์ไม่พอน่ะ", "", null, null);
         }
-        else if (have + amount > round.limit)
+        else if (have + amount > round.amountLimit)
         {
-            Manager.Instance.DialogPopup("ไม่สามารถแลกได้", "คุณมี " + have + "ใบ จำกัดแค่ " + round.limit + "ใบ", null, null);
+            Manager.Instance.DialogPopup("ไม่สามารถแลกได้", "คุณมี " + have + "ใบ จำกัดแค่ " + round.amountLimit + "ใบ", null, null);
         }
         else
         {

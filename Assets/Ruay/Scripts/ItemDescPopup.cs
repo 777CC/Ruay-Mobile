@@ -14,8 +14,8 @@ public class ItemDescPopup : RoundPopup {
     {
         if (item.choices != null)
         {
-            Choice choice = Array.Find(item.choices, c => c.value == ticket.reserveNumber);
-            string choiceName = choice.name;
+            Choice choice = Array.Find(item.choices, c => c.choiceValue == ticket.reserveNumber);
+            string choiceName = choice.choiceName;
             if (string.IsNullOrEmpty(choiceName))
             {
                 if (!string.IsNullOrEmpty(round.id))
@@ -26,17 +26,17 @@ public class ItemDescPopup : RoundPopup {
                     }
                 }
             }
-            SetView(tex, item.name, ticket.amount, choiceName, item.desc);
+            SetView(tex, item.title, ticket.amount, choiceName, item.desc);
         }
         else
         {
-            SetView(tex, item.name, ticket.amount, ticket.reserveNumber.ToString(), item.desc);
+            SetView(tex, item.title, ticket.amount, ticket.reserveNumber.ToString(), item.desc);
         }
     }
     public void SetReward(Item item, Reward reward,Texture tex)
     {
-        Choice choice = Array.Find(item.choices, c => c.value == reward.choice);
-        SetView(tex, item.name, reward.amount, choice.name, item.desc);
+        Choice choice = Array.Find(item.choices, c => c.choiceValue == reward.choice);
+        SetView(tex, item.title, reward.amount, choice.choiceName, item.desc);
     }
     void SetView(Texture tex,string name,int amount,string choice, string desc)
     {

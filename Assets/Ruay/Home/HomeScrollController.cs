@@ -56,10 +56,10 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
     {
         if (nextPage != null)
         {
-            Debug.Log("Load page : " + nextPage.name + " : " + viewStack.Count);
+            Debug.Log("Load page : " + nextPage.title + " : " + viewStack.Count);
             currentPage = nextPage;
             scroller.ReloadData();
-            header.SetData(scroller.ScrollRect, currentPage.name, viewStack.Count == 1, viewStack.Count > 1, () => { BackPage(); });
+            header.SetData(scroller.ScrollRect, currentPage.title, viewStack.Count == 1, viewStack.Count > 1, () => { BackPage(); });
             if (scrollRectMove != null)
             {
                 scroller.ScrollRect.onValueChanged.RemoveListener(scrollRectMove);
@@ -157,9 +157,7 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
         }
         else if (pageName == "Quit")
         {
-            FB.LogOut();
-            PlayerPrefs.DeleteAll();
-            Caching.CleanCache();
+            Manager.Instance.ClearUserInfo();
             Application.Quit();
         }
         else if (!string.IsNullOrEmpty(pageName))
@@ -172,19 +170,19 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
     {
         RoundPopup round = Instantiate(Resources.Load<GameObject>(prefabName)).GetComponent<RoundPopup>();
         round.SetItem(r, isItem,tex);
-        Popup(round, r.name);
+        Popup(round, r.title);
     }
     void ShowTicketDesc(string prefabName, Ticket ticket,Item round, Texture tex)
     {
         ItemDescPopup popup = Instantiate(Resources.Load<GameObject>(prefabName)).GetComponent<ItemDescPopup>();
         popup.SetTicket(round ,ticket, tex);
-        Popup(popup, round.name);
+        Popup(popup, round.title);
     }
     void ShowRewardDesc(string prefabName, Reward reward, Item item,Texture tex)
     {
         ItemDescPopup popup = Instantiate(Resources.Load<GameObject>(prefabName)).GetComponent<ItemDescPopup>();
         popup.SetReward(item, reward, tex);
-        Popup(popup, item.name);
+        Popup(popup, item.title);
     }
     void Popup(Popup popup, string head)
     {

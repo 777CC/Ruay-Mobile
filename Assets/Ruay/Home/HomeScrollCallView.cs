@@ -53,7 +53,7 @@ public class HomeScrollCallView : EnhancedScrollerCellView{
     const string PhotoDirName = "Photo";
     public void SetData(Card data)
     {
-        NameText.text = data.name;
+        NameText.text = data.title;
         switch (data.viewType)
         {
             case CardType.PhotoWithNameCenter:

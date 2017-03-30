@@ -23,13 +23,13 @@ public enum CardType
 [Serializable]
 public class Page{
     public string id;
-    public string name;
+    public string title;
     public List<Card> cards;
 }
 [Serializable]
 public struct Card
 {
-    public string name;
+    public string title;
     public string nextPage;
     public CardType viewType;
     public string photo;
