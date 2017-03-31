@@ -115,7 +115,6 @@ public class LoginPage : MonoBehaviour {
     }
     private void LoginCognito()
     {
-        Manager.Instance.DownloadHomeJson(null);
         Manager.Instance.OnSyncSuccess = HandleSyncSuccess;
         Manager.Instance.OnSyncFailure = HandleSyncFailure;
         Manager.Instance.LoginCognitoWithFacebook();
@@ -126,7 +125,9 @@ public class LoginPage : MonoBehaviour {
         Debug.Log("SyncSuccess : " + e + " : " + Manager.Instance.IsUserRegistered);
         if (Manager.Instance.IsUserRegistered)
         {
-            SceneManager.LoadScene("Home");
+            Manager.Instance.DownloadHomeJson(()=> {
+                SceneManager.LoadScene("Home");
+            });
         }
         else
         {

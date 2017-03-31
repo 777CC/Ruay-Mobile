@@ -30,6 +30,7 @@ public class Page{
 public struct Card
 {
     public string title;
+    public string action;
     public string nextPage;
     public CardType viewType;
     public string photo;

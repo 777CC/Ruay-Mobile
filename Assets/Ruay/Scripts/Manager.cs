@@ -28,7 +28,7 @@ public class Manager : Singleton<Manager>
             {
                 Debug.Log("Load user info from PlayerPrefs. \n" + PlayerPrefs.GetString(PrefsName));
                 JsonUtility.FromJsonOverwrite(PlayerPrefs.GetString(PrefsName), Instance);
-                ShowAd(Rect.zero,null);
+                AdsInit();
             }
             else
             {
@@ -341,6 +341,7 @@ public class Manager : Singleton<Manager>
                 SetSettingPage();
                 SetMyTicketsPage();
                 SetMyRewardsPage();
+                Save();
                 if (callback != null)
                 {
                     callback();
@@ -881,13 +882,16 @@ public class Manager : Singleton<Manager>
     GoogleMobileAdBanner adsBanner;
     void AdsInit()
     {
-        //Required
-        GoogleMobileAd.Init();
+        Debug.Log("AdsInit :" + Instance.androidAdUnitId);
 #if UNITY_ANDROID
         GoogleMobileAdSettings.Instance.Android_BannersUnitId = androidAdUnitId;
 #elif UNITY_IOS
         GoogleMobileAdSettings.Instance.IOS_BannersUnitId = iosAdUnitId;
 #endif
+
+        //Required
+        GoogleMobileAd.Init();
+
         //Optional, add data for better ad targeting
         if (gender == "male")
         {
