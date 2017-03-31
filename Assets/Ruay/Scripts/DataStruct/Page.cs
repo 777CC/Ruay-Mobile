@@ -47,5 +47,6 @@ public enum ActionType {
     Reward = 6,
     UserInfo = 7,
     SetInviteName = 8,
-    Quit = 9
+    OpenURL = 9,
+    Quit = 10
 }

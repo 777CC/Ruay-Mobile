@@ -132,6 +132,9 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
                 Popup invitePopup = Instantiate(Resources.Load<GameObject>("SetInviteNamePopup")).GetComponent<Popup>();
                 Popup(invitePopup, "แก้ไขข้อมูล");
                 break;
+            case ActionType.OpenURL:
+                Application.OpenURL(actionVal);
+                break;
             case ActionType.Quit:
                 Manager.Instance.ClearUserInfo();
                 Application.Quit();
@@ -211,7 +214,6 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
     {
         RoundPopup round = Instantiate(Resources.Load<GameObject>(prefabName)).GetComponent<RoundPopup>();
         round.SetItem(r, isItem,tex);
-        Debug.Log(JsonUtility.ToJson(r));
         Popup(round, r.title);
     }
     void ShowTicketDesc(string prefabName, Ticket ticket,Item round, Texture tex)
@@ -228,7 +230,6 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
     }
     void Popup(Popup popup, string head)
     {
-        Debug.Log(head);
         popup.transform.SetParent(canvas.transform, false);
         popup.transform.SetSiblingIndex(homeCanvasGroup.transform.GetSiblingIndex() + 1);
         header.SetData(popup.ContentScroll, head, false, true, () =>

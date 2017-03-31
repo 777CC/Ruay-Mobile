@@ -360,7 +360,7 @@ public class Manager : Singleton<Manager>
         {
             //Debug.Log(JsonUtility.ToJson(page));
             page.cards.ForEach((card) => {
-                Debug.Log(JsonUtility.ToJson(card));
+                //Debug.Log(JsonUtility.ToJson(card));
                 if (card.startTime != 0 && card.endTime != 0)
                 {
                     if (card.startTime > timeNow || card.endTime < timeNow)
@@ -373,9 +373,7 @@ public class Manager : Singleton<Manager>
             {
                 Card ad = new Card();
                 ad.viewType = CardType.Ad;
-                //int i = UnityEngine.Random.Range(0, page.cards.Count - 1);
                 int i = 0;
-                Debug.Log("R : " +i);
                 page.cards.Insert(i, ad);
             }
             //if (page.name != HomePageName && page.name != MyTicketsName && page.name != MyRewardsName)
