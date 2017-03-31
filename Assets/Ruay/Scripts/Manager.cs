@@ -398,7 +398,7 @@ public class Manager : Singleton<Manager>
         page.cards.Add(BackPageCard(page.title));
         Card userInfoCard = new Card();
         userInfoCard.title = "แก้ไขข้อมูลของคุณ";
-        userInfoCard.nextPage = "UserInfo";
+        userInfoCard.actionType = "UserInfo";
         userInfoCard.viewType = CardType.NameWithBGCenter;
         page.cards.Add(userInfoCard);
         //invite head card.
@@ -421,7 +421,7 @@ public class Manager : Singleton<Manager>
         //invite name change card.
         Card inviteChangeCard = new Card();
         inviteChangeCard.title = "แก้ไข";
-        inviteChangeCard.nextPage = "SetInviteName";
+        inviteChangeCard.actionType = "SetInviteName";
         inviteChangeCard.viewType = CardType.NameWithBGCenter;
         page.cards.Add(inviteChangeCard);
         page.cards.Add(BackPageCard(string.Empty));
@@ -429,7 +429,7 @@ public class Manager : Singleton<Manager>
         //Quit card.
         Card quitCard = new Card();
         quitCard.title = "ออกจากระบบ";
-        quitCard.nextPage = "Quit";
+        quitCard.actionType = "Quit";
         quitCard.viewType = CardType.NameWithBGCenter;
         page.cards.Add(quitCard);
         if (!pages.Contains(page))
@@ -474,7 +474,8 @@ public class Manager : Singleton<Manager>
                         card.title = tickets[i].reserveNumber.ToString();
                     }
                     card.title += " " + (string.IsNullOrEmpty(tickets[i].announced) ? "ยังไม่ประกาศ" : tickets[i].announced);
-                    card.nextPage = "Ticket" + i;
+                    card.actionType = "Ticket";
+                    card.actionValue = i.ToString();
                     card.viewType = CardType.NameWithLine;
                     page.cards.Add(card);
                 }
@@ -520,7 +521,8 @@ public class Manager : Singleton<Manager>
                     Card card = new Card();
                     Item round = Array.Find(items, r => r.id == rewards[i].itemId);
                     card.title = round.title;
-                    card.nextPage = "Reward" + i;
+                    card.actionType = "Reward";
+                    card.actionValue = i.ToString();
                     card.viewType = CardType.NameWithLine;
                     page.cards.Add(card);
                 }
@@ -551,8 +553,8 @@ public class Manager : Singleton<Manager>
         Card card = new Card();
         card.title = pageName;
         card.viewType = CardType.Header;
-        //card.nextPage = "Back";
-        card.nextPage = string.Empty;
+        card.actionType = string.Empty;
+        card.actionValue = string.Empty;
         return card;
     }
     public OnSyncCallback OnError;

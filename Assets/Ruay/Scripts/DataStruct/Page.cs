@@ -30,10 +30,22 @@ public class Page{
 public struct Card
 {
     public string title;
-    public string action;
-    public string nextPage;
+    public string actionType;
+    public string actionValue;
     public CardType viewType;
     public string photo;
     public double startTime;
     public double endTime;
+}
+
+public enum ActionType {
+    Back = 1,
+    ToPage = 2,
+    Round = 3,
+    Ticket = 4,
+    Item = 5,
+    Reward = 6,
+    UserInfo = 7,
+    SetInviteName = 8,
+    Quit = 9
 }

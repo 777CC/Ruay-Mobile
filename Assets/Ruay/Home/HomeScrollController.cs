@@ -35,9 +35,9 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
         // create a new data list for the slots
         //card = new SmallList<Card>();
 #if UNITY_EDITOR
-        Manager.Instance.DownloadHomeJson(()=> { NextPage("Home", null); });
+        Manager.Instance.DownloadHomeJson(()=> { NextPage("ToPage","Home", null); });
 #else
-        NextPage("Home", null);
+        NextPage("ToPage","Home", null);
 #endif
     }
 #if UNITY_ANDROID
@@ -94,82 +94,124 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
         scroller.Delegate = this;
         scroller.cellViewVisibilityChanged = CellViewVisibilityChanged;
     }
-    void NextPage(string pageName, Texture tex)
+    void NextPage(string actionType,string actionVal, Texture tex)
     {
-        string round = string.Empty;
-        string ticket = string.Empty;
-        string item = string.Empty;
-        string reward = string.Empty;
-        if (pageName.Length >= 6)
-        {
-            round = pageName.Substring(0, 6);
-            ticket = pageName.Substring(0, 6);
-            reward = pageName.Substring(0, 6);
+        switch ((ActionType)System.Enum.Parse(typeof(ActionType), actionType)) {
+            case ActionType.Back:
+                BackPage();
+                break;
+            case ActionType.ToPage:
+                Manager.Instance.GetPageById(actionVal, NextPage);
+                ChangePageEffect();
+                break;
+            case ActionType.Round:
+                Manager.Instance.GetRoundById(actionVal, (r) => { ShowItem("LottoPopup", r, false, tex); });
+                break;
+            case ActionType.Ticket:
+                int index;
+                if (int.TryParse(actionVal, out index))
+                {
+                    Manager.Instance.GetTicketByIndex(index, (it, r) => { ShowTicketDesc("ItemDescPopup", it, r, tex); });
+                }
+                break;
+            case ActionType.Item:
+                Manager.Instance.GetItemById(actionVal, (i) => { ShowItem("RoundChoicePopup", i,true, tex); });
+                break;
+            case ActionType.Reward:
+                int rewardIndex;
+                if (int.TryParse(actionVal, out rewardIndex))
+                {
+                    Manager.Instance.GetRewardByIndex(rewardIndex, (it, r) => { ShowRewardDesc("ItemDescPopup", it, r, tex); });
+                }
+                break;
+            case ActionType.UserInfo:
+                Manager.Instance.HideAd();
+                SceneManager.LoadScene("UserInfoEditor");
+                break;
+            case ActionType.SetInviteName:
+                Popup invitePopup = Instantiate(Resources.Load<GameObject>("SetInviteNamePopup")).GetComponent<Popup>();
+                Popup(invitePopup, "แก้ไขข้อมูล");
+                break;
+            case ActionType.Quit:
+                Manager.Instance.ClearUserInfo();
+                Application.Quit();
+                break;
         }
-        if (pageName.Length >= 4)
-        {
-            item = pageName.Substring(0, 4);
-        }
-        if (pageName == "Back")
-        {
-            BackPage();
-        }
-        else if (round == "RoundA")
-        {
-            string id = pageName.Substring(5, pageName.Length - 5);
-            Manager.Instance.GetRoundById(id, (r) => { ShowItem("LottoPopup", r, false,tex); });
-        }
-        else if (round == "RoundB")
-        {
-            string id = pageName.Substring(5, pageName.Length - 5);
-            Manager.Instance.GetRoundById(id, (r) => { ShowItem("RoundChoicePopup", r, false, tex); });
-        }
-        else if (ticket == "Ticket")
-        {
-            int index;
-            if (int.TryParse(pageName.Substring(6, pageName.Length - 6), out index))
-            {
-                Manager.Instance.GetTicketByIndex(index, (it, r) => { ShowTicketDesc("ItemDescPopup", it, r, tex); });
-            }
-        }
-        else if (item == "Item")
-        {
-            string id = pageName.Substring(4, pageName.Length - 4);
-            Manager.Instance.GetItemById(id, (i) => { ShowItem("RoundChoicePopup", i,true, tex); });
-        }
-        else if (reward == "Reward")
-        {
-            int index;
-            if (int.TryParse(pageName.Substring(6, pageName.Length - 6), out index))
-            {
-                Manager.Instance.GetRewardByIndex(index, (it, r) => { ShowRewardDesc("ItemDescPopup", it, r,tex); });
-            }
-        }
-        else if (pageName == "UserInfo")
-        {
-            Manager.Instance.HideAd();
-            SceneManager.LoadScene("UserInfoEditor");
-        }
-        else if (pageName == "SetInviteName")
-        {
-            Popup invitePopup = Instantiate(Resources.Load<GameObject>("SetInviteNamePopup")).GetComponent<Popup>();
-            Popup(invitePopup, "แก้ไขข้อมูล");
-        }
-        else if (pageName == "Quit")
-        {
-            Manager.Instance.ClearUserInfo();
-            Application.Quit();
-        }
-        else if (!string.IsNullOrEmpty(pageName))
-        {
-            Manager.Instance.GetPageById(pageName, NextPage);
-            ChangePageEffect();
-        }
+        //string round = string.Empty;
+        //string ticket = string.Empty;
+        //string item = string.Empty;
+        //string reward = string.Empty;
+        //if (pageName.Length >= 6)
+        //{
+        //    round = pageName.Substring(0, 6);
+        //    ticket = pageName.Substring(0, 6);
+        //    reward = pageName.Substring(0, 6);
+        //}
+        //if (pageName.Length >= 4)
+        //{
+        //    item = pageName.Substring(0, 4);
+        //}
+        //if (pageName == "Back")
+        //{
+        //    BackPage();
+        //}
+        //else if (round == "RoundA")
+        //{
+        //    string id = pageName.Substring(5, pageName.Length - 5);
+        //    Manager.Instance.GetRoundById(id, (r) => { ShowItem("LottoPopup", r, false,tex); });
+        //}
+        //else if (round == "RoundB")
+        //{
+        //    string id = pageName.Substring(5, pageName.Length - 5);
+        //    Manager.Instance.GetRoundById(id, (r) => { ShowItem("RoundChoicePopup", r, false, tex); });
+        //}
+        //else if (ticket == "Ticket")
+        //{
+        //    int index;
+        //    if (int.TryParse(pageName.Substring(6, pageName.Length - 6), out index))
+        //    {
+        //        Manager.Instance.GetTicketByIndex(index, (it, r) => { ShowTicketDesc("ItemDescPopup", it, r, tex); });
+        //    }
+        //}
+        //else if (item == "Item")
+        //{
+        //    string id = pageName.Substring(4, pageName.Length - 4);
+        //    Manager.Instance.GetItemById(id, (i) => { ShowItem("RoundChoicePopup", i,true, tex); });
+        //}
+        //else if (reward == "Reward")
+        //{
+        //    int index;
+        //    if (int.TryParse(pageName.Substring(6, pageName.Length - 6), out index))
+        //    {
+        //        Manager.Instance.GetRewardByIndex(index, (it, r) => { ShowRewardDesc("ItemDescPopup", it, r,tex); });
+        //    }
+        //}
+        //else if (pageName == "UserInfo")
+        //{
+        //    Manager.Instance.HideAd();
+        //    SceneManager.LoadScene("UserInfoEditor");
+        //}
+        //else if (pageName == "SetInviteName")
+        //{
+        //    Popup invitePopup = Instantiate(Resources.Load<GameObject>("SetInviteNamePopup")).GetComponent<Popup>();
+        //    Popup(invitePopup, "แก้ไขข้อมูล");
+        //}
+        //else if (pageName == "Quit")
+        //{
+        //    Manager.Instance.ClearUserInfo();
+        //    Application.Quit();
+        //}
+        //else if (!string.IsNullOrEmpty(pageName))
+        //{
+        //    Manager.Instance.GetPageById(pageName, NextPage);
+        //    ChangePageEffect();
+        //}
     }
     void ShowItem(string prefabName,Item r,bool isItem,Texture tex)
     {
         RoundPopup round = Instantiate(Resources.Load<GameObject>(prefabName)).GetComponent<RoundPopup>();
         round.SetItem(r, isItem,tex);
+        Debug.Log(JsonUtility.ToJson(r));
         Popup(round, r.title);
     }
     void ShowTicketDesc(string prefabName, Ticket ticket,Item round, Texture tex)
@@ -186,6 +228,7 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
     }
     void Popup(Popup popup, string head)
     {
+        Debug.Log(head);
         popup.transform.SetParent(canvas.transform, false);
         popup.transform.SetSiblingIndex(homeCanvasGroup.transform.GetSiblingIndex() + 1);
         header.SetData(popup.ContentScroll, head, false, true, () =>
@@ -268,11 +311,11 @@ public class HomeScrollController : MonoBehaviour, IEnhancedScrollerDelegate
             }
         }
         cellView.OnClick.RemoveAllListeners();
-        if (!string.IsNullOrEmpty(currentPage.cards[dataIndex].nextPage))
+        if (!string.IsNullOrEmpty(currentPage.cards[dataIndex].actionType))
         {
             cellView.OnClick.AddListener(() =>
             {
-                NextPage(currentPage.cards[dataIndex].nextPage, cellView.Photo);
+                NextPage(currentPage.cards[dataIndex].actionType, currentPage.cards[dataIndex].actionValue, cellView.Photo);
             });
         }
         return cellView;

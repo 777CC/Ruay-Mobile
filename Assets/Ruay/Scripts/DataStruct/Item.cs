@@ -14,7 +14,6 @@ public struct Item
     public double startDate;
     public double expireDate;
     public Choice[] choices;
-
 }
 [Serializable]
 public struct Choice
