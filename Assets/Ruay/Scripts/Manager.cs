@@ -110,7 +110,7 @@ public class Manager : Singleton<Manager>
     const string SettingPageId = "Setting";
     const string SettingPageName = "การตั้งค่า";
     const string MyTicketsPageId = "MyTickets";
-    const string MyTicketsPageName = "ฉลากของคุณ";
+    const string MyTicketsPageName = "สลากของคุณ";
     const string MyRewardsPageId = "MyRewards";
     const string MyRewardsPageName = "ของขวัญ";
     private const float imageW = 1032f;
@@ -820,7 +820,7 @@ public class Manager : Singleton<Manager>
                     {
                         onSuccess();
                     }
-                    DialogPopup("รับฉลากเรียบร้อย", "สามารถดูได้ที่หน้าฉลากทั้งหมด", null, null);
+                    DialogPopup("รับสลากเรียบร้อย", "ดูได้ที่หน้าสลากของคุณ", null, null);
                 }
                 else
                 {
