@@ -251,7 +251,9 @@ public class UserInfo : MonoBehaviour
     }
     private void HandleSyncSuccess(string e)
     {
-        SceneManager.LoadScene("Home");
+        Manager.Instance.DownloadHomeJson(() => {
+            SceneManager.LoadScene("Home");
+        });
     }
     private void HandleSyncFailure(string exception)
     {

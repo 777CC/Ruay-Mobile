@@ -15,7 +15,8 @@ public class SetInviteNamePopup : Popup
         payloadObj.oldInviteName = Manager.Instance.inviteName;
         inviteField.text = Manager.Instance.inviteName;
         inviteField.onEndEdit.AddListener((text) => {
-            Manager.Instance.inviteName = text;
+            //Manager.Instance.inviteName = text;
+            Debug.Log("onEndEdit : " + !string.IsNullOrEmpty(text) + " : " + payloadObj.oldInviteName + " : " +text);
             summitButton.interactable = !string.IsNullOrEmpty(text) && payloadObj.oldInviteName != text;
         });
         summitButton.onClick.AddListener(() =>
@@ -26,6 +27,7 @@ public class SetInviteNamePopup : Popup
     }
     public void SetInviteName()
     {
+        summitButton.interactable = false;
         payloadObj.newInviteName = inviteField.text;
         Manager.Instance.LambdaClient.InvokeAsync(new Amazon.Lambda.Model.InvokeRequest()
         {
@@ -34,13 +36,21 @@ public class SetInviteNamePopup : Popup
         },
         (responseObject) =>
         {
+            Debug.Log(responseObject.Exception + " : " + Encoding.ASCII.GetString(responseObject.Response.Payload.ToArray()));
             if (responseObject.Exception == null)
             {
                 string res = Encoding.ASCII.GetString(responseObject.Response.Payload.ToArray());
-                Manager.Instance.inviteName = payloadObj.newInviteName;
-                Manager.Instance.Save();
-                Manager.Instance.SetSettingPage();
-                Manager.Instance.DialogPopup("เรียบร้อย :)", payloadObj.newInviteName, null, null);
+                if (string.IsNullOrEmpty(res) || res == "null")
+                {
+                    Manager.Instance.inviteName = payloadObj.newInviteName;
+                    Manager.Instance.Save();
+                    Manager.Instance.SetSettingPage();
+                    Manager.Instance.DialogPopup("เรียบร้อย :)", payloadObj.newInviteName, null, null);
+                }
+                else
+                {
+                    Manager.Instance.DialogPopup("ไม่สำเร็จ", "ชื่อซ้ำ ลองใช้ชื่ออื่นน่ะ", null, null);
+                }
             }
             else
             {

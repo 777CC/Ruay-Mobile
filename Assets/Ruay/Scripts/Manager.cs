@@ -252,7 +252,7 @@ public class Manager : Singleton<Manager>
             bool IsUserRegistered = true;
             for (int i = 0; i < UserInfoKeys.Length; i++)
             {
-                string val = UserInfo.Get(UserInfoKeys[i]);
+                string val = GetUserInfo(UserInfoKeys[i]);
                 int isZero;
                 int.TryParse(val, out isZero);
                 if (string.IsNullOrEmpty(val) || val == "0")
@@ -662,38 +662,34 @@ public class Manager : Singleton<Manager>
     {
         if (e != null)
         {
-            //double time;
-            //if (double.TryParse(UserInfo.Get("updateTime"), out time))
-            //{
-            //    updateTime = time;
-            //}
             updateTime = GetUnixTime();
         }
         int s;
-        if (int.TryParse(UserInfo.Get("satang"), out s))
+        if (int.TryParse(GetUserInfo("satang"), out s))
         {
             satang = s;
         }
-        fbProfilePicture = UserInfo.Get("fbProfilePicture");
-        firstName = UserInfo.Get("firstName");
-        lastName = UserInfo.Get("lastName");
-        gender = UserInfo.Get("gender");
-        phoneNumber = UserInfo.Get("phoneNumber");
-        inviteBy = UserInfo.Get("inviteBy");
-        //inviteName = UserInfo.Get("inviteName");
+        fbProfilePicture = GetUserInfo("fbProfilePicture");
+        firstName = GetUserInfo("firstName");
+        lastName = GetUserInfo("lastName");
+        gender = GetUserInfo("gender");
+        phoneNumber = GetUserInfo("phoneNumber");
+        Debug.Log("inviteName : " + GetUserInfo("inviteName") + " inviteBy : " + GetUserInfo("inviteBy"));
+        inviteBy = GetUserInfo("inviteBy");
+        inviteName = GetUserInfo("inviteName");
         int date;
-        if (int.TryParse(UserInfo.Get("birthday"), out date))
+        if (int.TryParse(GetUserInfo("birthday"), out date))
         {
             birthday = date;
         }
         int zo;
-        if (int.TryParse(UserInfo.Get("zodiac"), out zo))
+        if (int.TryParse(GetUserInfo("zodiac"), out zo))
         {
             zodiac = zo;
         }
-        interests = UserInfo.Get("interests");
-        Ticket[] tk = JsonHelper.getJsonArray<Ticket>(UserInfo.Get("tickets"));
-        Reward[] rw = JsonHelper.getJsonArray<Reward>(UserInfo.Get("rewards"));
+        interests = GetUserInfo("interests");
+        Ticket[] tk = JsonHelper.getJsonArray<Ticket>(GetUserInfo("tickets"));
+        Reward[] rw = JsonHelper.getJsonArray<Reward>(GetUserInfo("rewards"));
         if (tk != null)
         {
             tickets = new List<Ticket>(tk);
@@ -719,6 +715,17 @@ public class Manager : Singleton<Manager>
         {
             OnSyncFailure(e.Exception.ToString());
         }
+    }
+    string GetUserInfo(string name)
+    {
+        if (UserInfo.ActiveRecords.ContainsKey(name))
+        {
+            Record rec = UserInfo.GetRecord(name);
+            if (!rec.IsDeleted) {
+                return rec.Value;
+            }
+        }
+        return string.Empty;
     }
     private bool HandleSyncConflict(Amazon.CognitoSync.SyncManager.Dataset dataset, List<SyncConflict> conflicts)
     {
