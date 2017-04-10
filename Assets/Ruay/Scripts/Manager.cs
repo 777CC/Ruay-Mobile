@@ -45,7 +45,7 @@ public class Manager : Singleton<Manager>
         }
     }
 #region UserData
-    private string[] UserInfoKeys = { "fbProfilePicture", "firstName", "lastName", "phoneNumber", "birthday", "gender", "zodiac", "interests" };
+    private string[] UserInfoKeys = { "fbProfilePicture", "firstName", "lastName", "phoneNumber", "birthday", "gender", "interests" };
     public string facebookId = string.Empty;
     public int satang = 0;
     public string fbProfilePicture = string.Empty;
@@ -61,7 +61,6 @@ public class Manager : Singleton<Manager>
     [SerializeField]
     public int birthday = 0;
     public string interests = string.Empty;
-    public int zodiac = 0;
     [SerializeField]
     private List<Ticket> tickets;
     [SerializeField]
@@ -394,8 +393,13 @@ public class Manager : Singleton<Manager>
         page.title = SettingPageName;
         page.cards = new List<Card>();
         page.cards.Add(BackPageCard(page.title));
+        Card userInfo = new Card();
+        userInfo.title = "ข้อมูลของคุณ : " + (IsUserRegistered? firstName + " "+ lastName:"ยังไม่กรอกข้อมูล");
+        userInfo.actionType = "UserInfo";
+        userInfo.viewType = CardType.NameOnlyLeft;
+        page.cards.Add(userInfo);
         Card userInfoCard = new Card();
-        userInfoCard.title = "แก้ไขข้อมูลของคุณ";
+        userInfoCard.title = (IsUserRegistered ? "แก้ไข" : "กรอกข้อมูล");
         userInfoCard.actionType = "UserInfo";
         userInfoCard.viewType = CardType.NameWithBGCenter;
         page.cards.Add(userInfoCard);
@@ -633,7 +637,6 @@ public class Manager : Singleton<Manager>
             PutToDataset("inviteBy", inviteBy);
             PutToDataset("birthday", birthday.ToString());
             PutToDataset("gender", gender);
-            PutToDataset("zodiac", zodiac.ToString());
             PutToDataset("interests", interests);
             UserInfo.SynchronizeAsync();
             //foreach (KeyValuePair<string, string> entry in UserInfo.ActiveRecords)
@@ -681,11 +684,6 @@ public class Manager : Singleton<Manager>
         if (int.TryParse(GetUserInfo("birthday"), out date))
         {
             birthday = date;
-        }
-        int zo;
-        if (int.TryParse(GetUserInfo("zodiac"), out zo))
-        {
-            zodiac = zo;
         }
         interests = GetUserInfo("interests");
         Ticket[] tk = JsonHelper.getJsonArray<Ticket>(GetUserInfo("tickets"));

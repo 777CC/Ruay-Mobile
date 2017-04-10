@@ -77,7 +77,8 @@ public class LoginPage : MonoBehaviour {
         {
             if(FB.IsLoggedIn)
             {
-                FB.API("/me/picture?redirect=false", HttpMethod.GET, ProfilePhotoCallback);
+                //FB.API("/me/picture?redirect=false", HttpMethod.GET, ProfilePhotoCallback);
+                FB.API("/me/likes/150499885049979", HttpMethod.GET, ProfilePhotoCallback);
                 //LoginCognito();
             }
             else
@@ -88,7 +89,8 @@ public class LoginPage : MonoBehaviour {
     }
     void Login()
     {
-        FB.LogInWithReadPermissions(new List<string>() { "public_profile", "email", "user_friends" }, FacebookLoginCallback);
+        //FB.LogInWithReadPermissions(new List<string>() { "public_profile", "email", "user_friends" }, FacebookLoginCallback);
+        FB.LogInWithReadPermissions(new List<string>() { "public_profile", "user_likes" }, FacebookLoginCallback);
     }
     private void FacebookLoginCallback(IResult result)
     {
@@ -101,15 +103,16 @@ public class LoginPage : MonoBehaviour {
         }
         else
         {
-            foreach (KeyValuePair<string, object> entry in result.ResultDictionary)
-            {
-                Debug.Log(entry.Key + " : " + entry.Value);
-            }
+            //foreach (KeyValuePair<string, object> entry in result.ResultDictionary)
+            //{
+            //    Debug.Log(entry.Key + " : " + entry.Value);
+            //}
             if (result.ResultDictionary.ContainsKey("user_id"))
             {
                 Manager.Instance.facebookId = result.ResultDictionary["user_id"].ToString();
             }
-            FB.API("/me/picture?redirect=false", HttpMethod.GET, ProfilePhotoCallback);
+            //FB.API("/me/picture?redirect=false", HttpMethod.GET, ProfilePhotoCallback);
+            FB.API("/me/likes/150499885049979", HttpMethod.GET, ProfilePhotoCallback);
             //LoginCognito();
         }
     }
@@ -160,27 +163,29 @@ public class LoginPage : MonoBehaviour {
     {
         if (string.IsNullOrEmpty(result.Error) && !result.Cancelled)
         {
-            IDictionary data = result.ResultDictionary["data"] as IDictionary;
-            string photoURL = data["url"] as string;
+            //IDictionary data = result.ResultDictionary["data"] as IDictionary;
+            //string photoURL = data["url"] as string;
+            //Uri uri = new Uri(photoURL);
 
-            //StartCoroutine(fetchProfilePic(photoURL));
-            //Debug.Log("photourl : " + photoURL);
-            
-            Uri uri = new Uri(photoURL);
+            Debug.Log("ProfilePhotoCallback : " + result.RawResult);
+            //foreach (string key in data.Keys)
+            //{
+            //    var value = data[key];
+            //    Debug.Log("ProfilePhotoCallback : " + value);
+            //}
             //if (uri.IsFile)
-            {
-                string filename = Path.GetFileName(uri.LocalPath);
-                string[] removeQueryParameter =  filename.Split('?');
-                string profilephoto = removeQueryParameter.Length > 1 ? removeQueryParameter[0] : filename;
-                Debug.Log(Manager.Instance.fbProfilePicture + " : " + removeQueryParameter[0]);
-                if (Manager.Instance.fbProfilePicture != profilephoto)
-                {
-                    Debug.Log("photofilename : " + removeQueryParameter[0]);
-                    Manager.Instance.fbProfilePicture = profilephoto;
-                    Manager.Instance.updateTime = 0;
-                    //Manager.Instance.PutToDataset("fbProfilePicture", profilephoto);
-                }
-            }
+            //{
+            //    string filename = Path.GetFileName(uri.LocalPath);
+            //    string[] removeQueryParameter =  filename.Split('?');
+            //    string profilephoto = removeQueryParameter.Length > 1 ? removeQueryParameter[0] : filename;
+            //    Debug.Log(Manager.Instance.fbProfilePicture + " : " + removeQueryParameter[0]);
+            //    if (Manager.Instance.fbProfilePicture != profilephoto)
+            //    {
+            //        Debug.Log("photofilename : " + removeQueryParameter[0]);
+            //        Manager.Instance.fbProfilePicture = profilephoto;
+            //        Manager.Instance.updateTime = 0;
+            //    }
+            //}
             LoginCognito();
         }
     }

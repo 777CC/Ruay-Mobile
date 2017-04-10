@@ -35,10 +35,8 @@ public class UserInfo : MonoBehaviour
     [SerializeField]
     InterestController interestController;
     private int pageIndex = 1;
-    public Toggle[] zodiacToggles;
     private void Start()
     {
-        SetZodiac();
         firstnameField.text = Manager.Instance.firstName;
         lastnameField.text = Manager.Instance.lastName;
         phoneNumberField.text = Manager.Instance.phoneNumber;
@@ -68,14 +66,6 @@ public class UserInfo : MonoBehaviour
             AnotherToggle.isOn = true;
             AnotherToggle.Select();
             genderField.text = Manager.Instance.gender;
-        }
-        int zodiacIndex = Manager.Instance.zodiac;
-        if (zodiacIndex > 0)
-        {
-            if (zodiacToggles.Length >= zodiacIndex)
-            {
-                zodiacToggles[zodiacIndex - 1].isOn = true;
-            }
         }
         if (!string.IsNullOrEmpty(Manager.Instance.interests))
         {
@@ -117,20 +107,6 @@ public class UserInfo : MonoBehaviour
             Manager.Instance.phoneNumber = text;
         }));
         
-    }
-    private void SetZodiac()
-    {
-        for (int i = 0; i < zodiacToggles.Length; i++)
-        {
-            int index = i;
-            zodiacToggles[i].onValueChanged.AddListener((isOn) => {
-                if (isOn)
-                {
-                    Manager.Instance.zodiac = index + 1;
-                    Debug.Log("zodiacToggles : " + index);
-                }
-            });
-        }
     }
     public void NextMove()
     {
@@ -201,17 +177,6 @@ public class UserInfo : MonoBehaviour
             Validated();
         }
     }
-    void ZodiacValidation()
-    {
-        if (Manager.Instance.zodiac <= 0)
-        {
-            Manager.Instance.DialogPopup("", "-กรุณาใส่ราศี", null, null);
-        }
-        else
-        {
-            Validated();
-        }
-    }
     void InterestValidation()
     {
         bool isValid = true;
@@ -275,32 +240,9 @@ public class UserInfo : MonoBehaviour
                 GenderValidation();
                 break;
             case 4:
-                ZodiacValidation();
-                break;
-            case 5:
                 InterestValidation();
                 break;
         }
-        //if (FormAnimator.GetCurrentAnimatorStateInfo(0).IsName("Base.NamePage"))
-        //{
-        //    NamePageValidtation();
-        //}
-        //else if (FormAnimator.GetCurrentAnimatorStateInfo(0).IsName("Base.BirthDay"))
-        //{
-        //    BirthDayValidtation();
-        //}
-        //else if (FormAnimator.GetCurrentAnimatorStateInfo(0).IsName("Base.Gender"))
-        //{
-        //    GenderValidation();
-        //}
-        //else if (FormAnimator.GetCurrentAnimatorStateInfo(0).IsName("Base.Interest"))
-        //{
-        //    InterestValidation();
-        //}
-        //else
-        //{
-        //    FormAnimator.SetTrigger(NextStr);
-        //}
         Manager.Instance.Save();
     }
     public void BackPage()
@@ -315,14 +257,6 @@ public class UserInfo : MonoBehaviour
         }
         pageIndex--;
         Debug.Log(pageIndex);
-        //if (FormAnimator.GetCurrentAnimatorStateInfo(0).IsName("NamePage"))
-        //{
-        //    BackToLogin();
-        //}
-        //else
-        //{
-        //    FormAnimator.SetTrigger(BackStr);
-        //}
     }
     public void BackToLogin()
     {
