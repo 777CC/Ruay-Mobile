@@ -1,0 +1,139 @@
+{
+  "androidAdUnitId": "ca-app-pub-4416122709352572/4608987845",
+  "iosAdUnitId": "ca-app-pub-4416122709352572/4608987845",
+  "pages": [
+    {
+      "id": "Home",
+      "name": "รวย",
+      "cards": [
+        {
+          "name": "งวด 1 เม.ย. 60",
+          "photo": "RoundA20170401.jpg",
+          "nextPage": "RoundA20170401",
+          "viewType": "1",
+          "startTime": "1489586800000",
+          "endTime": "1491022800000"
+        },
+        {
+          "name": "แลกของขวัญ",
+          "nextPage": "Shop",
+          "photo": "Shop20170315.jpg",
+          "viewType": "1"
+        },
+        {
+          "name": "สลากของคุณ",
+          "nextPage": "MyTickets",
+          "viewType": "8"
+        },
+        {
+          "name": "ของขวัญ",
+          "nextPage": "MyRewards",
+          "viewType": "8"
+        },
+        {
+          "name": "การตั้งค่า",
+          "nextPage": "Setting",
+          "viewType": "8"
+        }
+      ]
+    },
+    {
+      "id": "Shop",
+      "name": "แลกของขวัญ",
+      "cards": [
+        {
+          "name": "ของขวัญเข้าเร็วๆนี้ เตรียมสตางค์รอเลยจ้าาา",
+          "nextPage": "",
+          "viewType": "9"
+        }
+      ]
+    }
+  ],
+  "rounds": [
+    {
+      "id": "A20170401",
+      "name": "งวด 1 เม.ย. 60",
+      "desc": "รางวัลที่ 1 : iPhone 7\nและสุ่ม 2 รางวัล\nแจกรางวัลล่ะ 1000 บาท\nเลขท้าย3ตัว 20,000 ส.\nเลขท้าย 2 ตัว 2,000 ส.\nสามารถแลกได้ถึงก่อนเที่ยง\nตรงวันประกาศผล",
+      "price": "40",
+      "limit": "100",
+      "startTime": "1489586800000",
+      "endTime": "1491022800000"
+    },
+    {
+      "id": "B20170101",
+      "name": "เทสสสสสสซ้ำำำำๆๆๆๆๆ",
+      "photo": "string",
+      "desc": "string",
+      "price": "600",
+      "limit": "1",
+      "discountPercent": "%",
+      "discountprice": "100",
+      "expireDate": "",
+      "startDate": "",
+      "choices": [
+        {
+          "name": "แมนยู",
+          "value": "1"
+        },
+        {
+          "name": "fdas",
+          "value": "2"
+        },
+        {
+          "name": "]ดกำดด",
+          "value": "3"
+        }
+      ]
+    }
+  ],
+  "items": [
+    {
+      "id": "001",
+      "name": "iPhone 7",
+      "photo": "001.jpg",
+      "desc": "feawfdsafdsafdsafdsafdsafdsa\nfdsafdsafdasfdsaf\nfdasfefdsaf",
+      "price": "2000000",
+      "limit": "1",
+      "discountPercent": "%",
+      "discountprice": "100",
+      "startTime": "1489640401000",
+      "endTime": "1491022800000"
+    },
+    {
+      "id": "002",
+      "name": "Click125",
+      "photo": "002.jpg",
+      "desc": "feawfdsafdsafdsafdsafdsafdsa\nfdsafdsafdasfdsaf\nfdasfefdsaf",
+      "price": "2500000",
+      "discountPercent": "%",
+      "discountprice": "100",
+      "startTime": "1489640401000",
+      "endTime": "1491022800000"
+    },
+    {
+      "id": "003",
+      "name": "Huawei GR5",
+      "photo": "003.jpg",
+      "choices": [
+        {
+          "name": "สีแดง",
+          "value": "1"
+        },
+        {
+          "name": "สีดำ",
+          "value": "2"
+        },
+        {
+          "name": "สีดำ",
+          "value": "3"
+        }
+      ],
+      "desc": "feawfdsafdsafdsafdsafdsafdsa\nfdsafdsafdasfdsaf\nfdasfefdsaf",
+      "price": "2000000",
+      "discountPercent": "%",
+      "discountprice": "100",
+      "startTime": "1489640401000",
+      "endTime": "1491022800000"
+    }
+  ]
+}
