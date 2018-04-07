@@ -1,0 +1,82 @@
+{
+  "appUrl": "https://chainchoonoi.com/",
+  "dataSetName": "Info",
+  "homeFlieName": "home.json",
+  "identityPoolId": "ap-northeast-1:d2051844-b612-4173-a365-838a4da96036",
+  "regionName": "ap-northeast-1",
+  "updateTimeCount": "54000000",
+  "appInterests": [
+    {
+      "name": "cosplay",
+      "value": "cosplay"
+    },
+    {
+      "name": "ดูดวง",
+      "value": "horoscope"
+    },
+    {
+      "name": "ถ่ายรูป",
+      "value": "photograph"
+    },
+    {
+      "name": "ดนตรี",
+      "value": "music"
+    },
+    {
+      "name": "ดราม่า",
+      "value": "social"
+    },
+    {
+      "name": "หนัง",
+      "value": "movie"
+    },
+    {
+      "name": "ความรัก",
+      "value": "love"
+    },
+    {
+      "name": "การ์ตูน",
+      "value": "cartoon"
+    },
+    {
+      "name": "ทำอาหาร",
+      "value": "food"
+    },
+    {
+      "name": "เน็ตไอดอล",
+      "value": "sexy"
+    },
+    {
+      "name": "ฟุตบอล",
+      "value": "football"
+    },
+    {
+      "name": "เต้น",
+      "value": "dance"
+    },
+    {
+      "name": "ดารา",
+      "value": "celebrity"
+    },
+    {
+      "name": "เกม",
+      "value": "game"
+    },
+    {
+      "name": "ท่องเที่ยว",
+      "value": "travel"
+    },
+    {
+      "name": "บ้าน",
+      "value": "house"
+    },
+    {
+      "name": "สุขภาพ",
+      "value": "health"
+    },
+    {
+      "name": "9gag",
+      "value": "joke"
+    }
+  ]
+}
